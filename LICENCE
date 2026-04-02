@@ -1,15 +1,33 @@
 🛡️ Aviso de Propiedad Intelectual y Términos de Uso
-Proyecto: Gestor de Gastos - "Destino Impar"
+Proyecto: Gestor de Gastos
 Autor: Jimmi Alvaro Chahuayo 
 Ubicación: Arequipa, Perú
+
 1. Reserva de Derechos
-Todos los derechos de propiedad intelectual de este software, incluyendo el código fuente, la lógica de negocio, los algoritmos de cálculo de costos de operación (combustible, mantenimiento, SOAT) y el diseño de la interfaz de usuario, están reservados exclusivamente al autor.
+Todos los derechos de propiedad intelectual de este software, 
+incluyendo el código fuente, la lógica de negocio,
+los algoritmos de cálculo de costos de operación 
+(combustible, mantenimiento, SOAT) 
+y el diseño de la interfaz de usuario, 
+están reservados exclusivamente al autor.
+
 2. Restricciones de Uso
 Queda terminantemente prohibido a cualquier tercero:
-Reproducción y Distribución: Copiar, descargar o distribuir este código con fines comerciales o privados sin el consentimiento expreso y por escrito del autor.
-Obras Derivadas: Modificar, alterar o transformar el código fuente para crear aplicaciones basadas en esta lógica.
-Ingeniería Inversa: Intentar descompilar o extraer la lógica de cálculo del gestor para usos ajenos a este repositorio.
+Reproducción y Distribución: Copiar, descargar o distribuir 
+este código con fines comerciales o privados 
+sin el consentimiento expreso y por escrito del autor.
+Obras Derivadas: Modificar, alterar o transformar 
+el código fuente para crear aplicaciones basadas en esta lógica.
+Ingeniería Inversa: Intentar descompilar o extraer la 
+lógica de cálculo del gestor para usos ajenos a este repositorio.
+
 3. Atribución Obligatoria
-En caso de que el autor conceda un permiso especial de exhibición o uso académico, es obligatorio mantener el crédito visible al autor original en todas las pantallas y en la documentación del proyecto.
+En caso de que el autor conceda un permiso especial
+de exhibición o uso académico, es obligatorio 
+mantener el crédito visible al autor original 
+en todas las pantallas y en la documentación del proyecto.
+
 4. Sin Garantía (Cláusula de Exención de Responsabilidad)
-Este software se entrega "tal cual", con fines educativos y de gestión personal. El autor no se hace responsable por errores en el cálculo de gastos, pérdida de datos o decisiones financieras tomadas basadas en el uso de esta herramienta.
+Este software se entrega "tal cual", con fines educativos y de gestión personal. 
+El autor no se hace responsable por errores en el cálculo de gastos, 
+pérdida de datos o decisiones financieras tomadas basadas en el uso de esta herramienta.
