@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <link rel="manifest" href="manifest.json">
@@ -261,7 +261,36 @@
             color: white;
             border-color: #2c3e50;
         }
+        /* ===== RESUMEN SEMANAL ===== */
+        .fila-dia { display:flex; justify-content:space-between; align-items:center; padding:11px 14px; border-radius:12px; margin-bottom:7px; background:#f8f9fa; border:1px solid #eee; }
+        .fila-dia.hoy { background:#e8f4fd; border:2px solid var(--azul); }
+        .fila-dia.confirmado { background:#f0fff4; border:1px solid var(--verde); }
+        .dia-nombre { font-weight:900; font-size:14px; min-width:35px; }
+        .dia-km { font-weight:900; color:var(--azul); font-size:14px; }
+        .dia-ing { font-weight:bold; color:var(--verde); font-size:13px; }
+        .dia-vacio { color:#bbb; font-size:12px; font-style:italic; }
+        #txt-rango-semana-resumen { font-size:12px; color:#888; margin:0 0 12px; }
+        /* ===== FIN RESUMEN SEMANAL ===== */
+
         /* ===== FIN TEMA OSCURO ===== */
+        /* ===== RESUMEN SEMANAL ===== */
+        .fila-dia {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            background: rgba(255,255,255,0.05);
+        }
+        .fila-dia.hoy { background: rgba(52,152,219,0.2); border: 1px solid var(--azul); }
+        .fila-dia.confirmado { background: rgba(39,174,96,0.15); border: 1px solid var(--verde); }
+        .fila-dia .dia-nombre { font-weight: bold; font-size: 13px; min-width: 35px; }
+        .fila-dia .dia-km { color: var(--azul); font-weight: bold; font-size: 13px; }
+        .fila-dia .dia-ing { color: var(--verde); font-weight: bold; font-size: 13px; }
+        .fila-dia .dia-vacio { color: #555; font-size: 12px; }
+        /* ===== FIN RESUMEN SEMANAL ===== */
+
         /* ===== FIN NUEVOS ESTILOS ===== */
     </style>
 </head>
@@ -417,9 +446,14 @@
                            value="">
                 </div>
             </div>
-            <div class="total-recorrido">
+            <div class="total-recorrido" style="display:flex; align-items:center; justify-content:center; gap:10px;">
                 Total Recorrido: <span id="total-recorrido">0.00 KM</span>
+                <span onclick="abrirResumenSemanal()" style="font-size:20px; cursor:pointer;" title="Resumen semanal">📄</span>
             </div>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+                <button onclick="confirmarCiclo()" style="flex:1; padding:12px; border:none; border-radius:14px; background:var(--verde); color:white; font-weight:900; font-size:15px; box-shadow:0 4px 0 #1e8449;">✅ CONFIRMAR KM FINAL</button>
+            </div>
+            <div id="ciclo-confirmado" style="display:none; text-align:center; margin-top:8px; font-size:12px; color:#2ecc71; font-weight:bold;">✔ Ciclo del día confirmado</div>
 
             <div class="separador-card"></div>
 
@@ -452,6 +486,27 @@
     <div id="modal-mes" class="modal"><div class="modal-content"><h3>Mes</h3><div id="grid-meses" style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px;"></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">Cerrar</button></div></div>
     <div id="modal-semana" class="modal"><div class="modal-content"><h3>Semanas</h3><div style="display:flex; justify-content:center; gap:10px; align-items:center;"><button onclick="navegarSemana(-7)"> ◀ </button><span id="rango-semana-modal"></span><button onclick="navegarSemana(7)"> ▶ </button></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">OK</button></div></div>
     <div id="modal-anio" class="modal"><div class="modal-content"><h3>Año</h3><div style="display:flex; justify-content:center; gap:10px; align-items:center;"><button onclick="navegarAnio(-1)"> ◀ </button><span id="txt-anio-modal" style="font-size:24px; font-weight:bold;"></span><button onclick="navegarAnio(1)"> ▶ </button></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">OK</button></div></div>
+
+    <!-- MODAL RESUMEN SEMANAL -->
+    <div id="modal-resumen-semanal" class="modal">
+        <div class="modal-content" style="background:white; color:#333; max-height:85vh; overflow-y:auto; padding:20px;">
+            <h3 style="color:var(--oscuro); margin-bottom:2px;">📄 Resumen Semanal</h3>
+            <p id="txt-rango-semana-resumen" style="font-size:12px; color:#888; margin-bottom:12px;"></p>
+            <div id="tabla-resumen-semanal"></div>
+            <div style="background:#f8f9fa; border-radius:12px; padding:14px; margin-top:10px; border:2px solid var(--azul);">
+                <div style="display:flex; justify-content:space-between; font-weight:900; font-size:15px;">
+                    <span>🛣️ TOTAL KM</span>
+                    <span id="total-km-semana" style="color:var(--azul);">0.0 KM</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-weight:900; font-size:15px; margin-top:8px;">
+                    <span>💰 INGRESOS</span>
+                    <span id="total-ing-semana" style="color:var(--verde);">S/. 0.00</span>
+                </div>
+            </div>
+            <button onclick="compartirResumenWhatsApp()" style="width:100%; margin-top:12px; padding:14px; border:none; border-radius:12px; background:#25D366; color:white; font-weight:bold; font-size:15px;">📲 Compartir por WhatsApp</button>
+            <button onclick="cerrarModalesYModos()" style="width:100%; margin-top:8px; padding:12px; border:none; border-radius:12px; background:#eee; color:#666; font-weight:bold;">Cerrar</button>
+        </div>
+    </div>
 
     <script>
         Chart.register(ChartDataLabels);
@@ -1093,6 +1148,159 @@
             let txt = `🚕 *REPORTE GESTOR TAXI*\n💰 *BALANCE:* ${val}\n📈 *ING:* ${document.getElementById('txt-total-ing').innerText}\n📉 *GAS:* ${document.getElementById('txt-total-gas').innerText}\n\n📊 *RENDIMIENTO:*\n🛣️ *KM:* ${rKM}\n⏱️ *HR:* ${rHR}`; 
             window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank'); 
         }
+
+        // ===== CONFIRMAR CICLO Y RESUMEN SEMANAL =====
+        let ciclosSemanales = JSON.parse(localStorage.getItem('gt_ciclos_v1')) || {};
+
+        function confirmarCiclo() {
+            const kmInicio = parseFloat(document.getElementById('km-inicio').value) || 0;
+            const kmFinal = parseFloat(document.getElementById('km-final').value) || 0;
+            const total = kmFinal >= kmInicio ? (kmFinal - kmInicio) : 0;
+
+            if (kmFinal <= 0) { alert("Ingresa el KM Final antes de confirmar."); return; }
+
+            const hoy = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const ingresosHoy = movs
+                .filter(m => m.tipo === 'ingreso' && new Date(m.fecha).toLocaleDateString('en-CA') === hoy)
+                .reduce((a, b) => a + b.mon, 0);
+
+            ciclosSemanales[hoy] = {
+                kmInicio, kmFinal, kmTotal: total,
+                ingresos: ingresosHoy,
+                confirmado: true,
+                hora: new Date().toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit', hour12:false})
+            };
+            localStorage.setItem('gt_ciclos_v1', JSON.stringify(ciclosSemanales));
+
+            // Preparar KM inicio para el siguiente día
+            document.getElementById('km-inicio').value = kmFinal;
+            document.getElementById('km-final').value = '';
+            document.getElementById('total-recorrido').innerText = '0.00 KM';
+            guardarVehiculo();
+
+            // Mostrar confirmación
+            const conf = document.getElementById('ciclo-confirmado');
+            conf.style.display = 'block';
+            conf.innerText = `✔ ${total.toFixed(1)} KM confirmados — S/. ${ingresosHoy.toFixed(2)}`;
+            setTimeout(() => conf.style.display = 'none', 4000);
+
+            // Limpiar ciclos de semanas anteriores (mantener solo 4 semanas)
+            limpiarCiclosAntiguos();
+        }
+
+        function limpiarCiclosAntiguos() {
+            const hace28dias = new Date();
+            hace28dias.setDate(hace28dias.getDate() - 28);
+            Object.keys(ciclosSemanales).forEach(fecha => {
+                if (new Date(fecha) < hace28dias) delete ciclosSemanales[fecha];
+            });
+            localStorage.setItem('gt_ciclos_v1', JSON.stringify(ciclosSemanales));
+        }
+
+        function getInicioSemana(fecha) {
+            const d = new Date(fecha);
+            const dia = d.getDay();
+            const diff = dia === 0 ? -6 : 1 - dia; // lunes = inicio
+            d.setDate(d.getDate() + diff);
+            d.setHours(0,0,0,0);
+            return d;
+        }
+
+        function abrirResumenSemanal() {
+            pushEstado();
+            const hoy = new Date();
+            const inicioSemana = getInicioSemana(hoy);
+            const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            const hoyStr = hoy.toLocaleDateString('en-CA');
+
+            // Rango de la semana
+            const finSemana = new Date(inicioSemana);
+            finSemana.setDate(inicioSemana.getDate() + 6);
+            document.getElementById('txt-rango-semana-resumen').innerText =
+                `${inicioSemana.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})} — ${finSemana.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})}`;
+
+            let htmlTabla = '';
+            let totalKmSemana = 0;
+            let totalIngSemana = 0;
+
+            for (let i = 0; i < 7; i++) {
+                const diaFecha = new Date(inicioSemana);
+                diaFecha.setDate(inicioSemana.getDate() + i);
+                const diaStr = diaFecha.toLocaleDateString('en-CA');
+                const esHoy = diaStr === hoyStr;
+                const ciclo = ciclosSemanales[diaStr];
+
+                let claseExtra = esHoy ? 'hoy' : (ciclo ? 'confirmado' : '');
+                let contenido = '';
+
+                if (ciclo) {
+                    totalKmSemana += ciclo.kmTotal || 0;
+                    totalIngSemana += ciclo.ingresos || 0;
+                    contenido = `
+                        <span class="dia-km">${(ciclo.kmTotal||0).toFixed(1)} KM</span>
+                        <span class="dia-ing">S/. ${(ciclo.ingresos||0).toFixed(2)}</span>`;
+                } else if (esHoy) {
+                    // Calcular ingresos de hoy en tiempo real
+                    const ingHoy = movs
+                        .filter(m => m.tipo === 'ingreso' && new Date(m.fecha).toLocaleDateString('en-CA') === hoyStr)
+                        .reduce((a, b) => a + b.mon, 0);
+                    const kmHoy = parseFloat(document.getElementById('total-recorrido').innerText) || 0;
+                    contenido = `
+                        <span class="dia-km" style="color:var(--naranja)">${kmHoy.toFixed(1)} KM</span>
+                        <span class="dia-ing">S/. ${ingHoy.toFixed(2)}</span>`;
+                } else {
+                    contenido = `<span class="dia-vacio">— sin registro —</span>`;
+                }
+
+                htmlTabla += `
+                    <div class="fila-dia ${claseExtra}">
+                        <span class="dia-nombre">${diasSemana[i]}</span>
+                        <span style="font-size:10px; color:#666;">${diaFecha.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})}</span>
+                        <div style="display:flex; gap:12px; align-items:center;">${contenido}</div>
+                    </div>`;
+            }
+
+            document.getElementById('tabla-resumen-semanal').innerHTML = htmlTabla;
+            document.getElementById('total-km-semana').innerText = totalKmSemana.toFixed(1) + ' KM';
+            document.getElementById('total-ing-semana').innerText = 'S/. ' + totalIngSemana.toFixed(2);
+            document.getElementById('modal-resumen-semanal').style.display = 'flex';
+        }
+
+        function compartirResumenWhatsApp() {
+            const hoy = new Date();
+            const inicioSemana = getInicioSemana(hoy);
+            const finSemana = new Date(inicioSemana);
+            finSemana.setDate(inicioSemana.getDate() + 6);
+            const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+            let txt = `🚕 *RESUMEN SEMANAL GT PUREQ*
+`;
+            txt += `📅 ${inicioSemana.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})} — ${finSemana.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})}
+
+`;
+
+            let totalKm = 0, totalIng = 0;
+            for (let i = 0; i < 7; i++) {
+                const diaFecha = new Date(inicioSemana);
+                diaFecha.setDate(inicioSemana.getDate() + i);
+                const diaStr = diaFecha.toLocaleDateString('en-CA');
+                const ciclo = ciclosSemanales[diaStr];
+                if (ciclo) {
+                    totalKm += ciclo.kmTotal || 0;
+                    totalIng += ciclo.ingresos || 0;
+                    txt += `${diasSemana[i]}: 🛣️ ${(ciclo.kmTotal||0).toFixed(1)} KM | 💰 S/. ${(ciclo.ingresos||0).toFixed(2)}
+`;
+                } else {
+                    txt += `${diasSemana[i]}: —
+`;
+                }
+            }
+            txt += `
+📊 *TOTAL: ${totalKm.toFixed(1)} KM | S/. ${totalIng.toFixed(2)}*`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
+        }
+        // ===== FIN CONFIRMAR CICLO Y RESUMEN SEMANAL =====
+
     </script>
 </body>
 </html>
