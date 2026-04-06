@@ -814,15 +814,21 @@
                 fechas.sort((a, b) => a - b);
                 horaFin = fechas[fechas.length - 1];
 
-                // Si el turno está activo y es el día de hoy, usar horaInicioTurno
+                // Buscar hora de inicio del turno para ese día específico
                 const fFiltro = document.getElementById('input-fecha-filtro').value;
                 const esHoy = fFiltro === new Date().toLocaleDateString('en-CA');
-                const turnoGuardado = localStorage.getItem('gt_inicio_turno');
 
-                if (periodoActual === 'dia' && esHoy && turnoGuardado) {
-                    horaInicio = new Date(turnoGuardado);
+                // Primero buscar hora guardada por fecha (persiste aunque finalice el turno)
+                const inicioPorFecha = localStorage.getItem('gt_inicio_' + fFiltro);
+                // Si es hoy y está activo, también revisar gt_inicio_turno
+                const inicioActivo = esHoy ? localStorage.getItem('gt_inicio_turno') : null;
+                const turnoGuardado = inicioActivo || inicioPorFecha;
+
+                if (periodoActual === 'dia' && turnoGuardado) {
+                    const horaGuardada = new Date(turnoGuardado);
+                    // Usar solo si es anterior al primer registro (evitar hora futura)
+                    horaInicio = horaGuardada < fechas[0] ? horaGuardada : fechas[0];
                 } else {
-                    // Para otros periodos o días anteriores: usar el primer registro
                     horaInicio = fechas[0];
                 }
 
@@ -1010,8 +1016,14 @@
                 localStorage.setItem('gt_dist_turno', '0');
                 localStorage.setItem('gt_tinicio', tInicio.toISOString());
 
-                // Guardar hora de inicio del turno
+                // Guardar hora de inicio del turno con la fecha del día
                 horaInicioTurno = new Date();
+                const hoyKey = horaInicioTurno.toLocaleDateString('en-CA');
+                // Solo guardar si no hay una hora de inicio anterior para hoy
+                const inicioExistente = localStorage.getItem('gt_inicio_' + hoyKey);
+                if (!inicioExistente) {
+                    localStorage.setItem('gt_inicio_' + hoyKey, horaInicioTurno.toISOString());
+                }
                 localStorage.setItem('gt_inicio_turno', horaInicioTurno.toISOString());
 
                 // Timer independiente para las horas
@@ -1040,6 +1052,7 @@
                 localStorage.removeItem('gt_dist_turno');
                 localStorage.removeItem('gt_tinicio');
                 horaInicioTurno = null;
+                // NO borrar gt_inicio_FECHA para que el reporte siga usando la hora correcta
                 localStorage.removeItem('gt_inicio_turno');
                 btn.innerText = " 🚀 INICIAR TURNO";
                 btn.style.background = "var(--naranja)";
