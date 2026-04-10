@@ -272,6 +272,12 @@
         #txt-rango-semana-resumen { font-size:12px; color:#888; margin:0 0 12px; }
         /* ===== FIN RESUMEN SEMANAL ===== */
 
+        /* ===== COMBUSTIBLE ===== */
+        .item-comb { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:12px; margin-bottom:6px; background:rgba(0,0,0,0.2); border-left:4px solid var(--naranja); font-size:12px; color:rgba(255,255,255,0.85); }
+        .item-comb .comb-tipo { font-weight:900; font-size:13px; }
+        .item-comb .comb-detail { color:rgba(255,255,255,0.5); font-size:11px; }
+        /* ===== FIN COMBUSTIBLE ===== */
+
         /* ===== FIN TEMA OSCURO ===== */
         /* ===== RESUMEN SEMANAL ===== */
         .fila-dia {
@@ -290,6 +296,12 @@
         .fila-dia .dia-ing { color: var(--verde); font-weight: bold; font-size: 13px; }
         .fila-dia .dia-vacio { color: #555; font-size: 12px; }
         /* ===== FIN RESUMEN SEMANAL ===== */
+
+        /* ===== COMBUSTIBLE ===== */
+        .item-comb { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:12px; margin-bottom:6px; background:rgba(0,0,0,0.2); border-left:4px solid var(--naranja); font-size:12px; color:rgba(255,255,255,0.85); }
+        .item-comb .comb-tipo { font-weight:900; font-size:13px; }
+        .item-comb .comb-detail { color:rgba(255,255,255,0.5); font-size:11px; }
+        /* ===== FIN COMBUSTIBLE ===== */
 
         /* ===== FIN NUEVOS ESTILOS ===== */
     </style>
@@ -422,11 +434,52 @@
             <input type="file" id="input-foto" accept="image/*" style="display:none;" onchange="subirFoto(this)">
             <h2 id="perf-usuario">TAXI JACK</h2>
             <button class="edit-nombre-btn" onclick="editarNombre()"> ✏️ EDITAR NOMBRE</button>
-            <div class="stat-grid">
-                <div class="stat-box"><small>INGRESOS TOTALES</small><br><b id="perf-ing" style="color:var(--verde); font-size:18px;">S/. 0.00</b></div>
-                <div class="stat-box"><small>GASTOS TOTALES</small><br><b id="perf-gas" style="color:var(--rojo); font-size:18px;">S/. 0.00</b></div>
-                <div class="stat-box"><small>SERVICIOS</small><br><b id="perf-regs" style="font-size:18px;">0</b></div>
-                <div class="stat-box"><small>BALANCE NETO</small><br><b id="perf-neto" style="color:var(--azul); font-size:18px;">S/. 0.00</b></div>
+            <!-- CONTADOR DE SERVICIOS DESDE ÚLTIMA RECARGA -->
+            <div onclick="abrirHistorialServicios()" style="margin-top:15px; background:rgba(255,255,255,0.08); border-radius:16px; padding:14px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); text-align:center;">
+                <small style="color:rgba(255,255,255,0.5); font-size:11px; letter-spacing:1px;">SERVICIOS DESDE ÚLTIMA RECARGA</small>
+                <div style="font-size:36px; font-weight:900; color:white;" id="contador-servicios-recarga">0</div>
+                <small style="color:rgba(255,255,255,0.4); font-size:10px;">Toca para ver historial anual</small>
+            </div>
+        </div>
+
+        <!-- PANEL COMBUSTIBLE -->
+        <div class="card-vehiculo" style="margin-top:15px;">
+            <h4>⛽ COMBUSTIBLE</h4>
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <button onclick="setCombustible('GLP')" id="btn-glp" style="flex:1; padding:10px; border-radius:12px; border:2px solid var(--naranja); background:var(--naranja); color:white; font-weight:900; font-size:13px;">🔵 GLP</button>
+                <button onclick="setCombustible('Gasolina')" id="btn-gasolina" style="flex:1; padding:10px; border-radius:12px; border:2px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); font-weight:900; font-size:13px;">🟡 GASOLINA</button>
+            </div>
+            <div class="km-grid">
+                <div class="km-box">
+                    <small>KM AL CARGAR</small>
+                    <input type="number" id="comb-km-carga" placeholder="0" oninput="calcularDuracionCombustible()">
+                </div>
+                <div class="km-box">
+                    <small>KM AL CULMINAR</small>
+                    <input type="number" id="comb-km-fin" placeholder="0" oninput="calcularDuracionCombustible()">
+                </div>
+            </div>
+            <div class="total-recorrido" style="display:flex; align-items:center; justify-content:center; gap:8px; margin:8px 0;">
+                Duración: <span id="comb-duracion" style="color:var(--naranja); font-weight:900;">0 KM</span>
+            </div>
+            <div class="km-grid" style="margin-top:4px;">
+                <div class="km-box">
+                    <small>COSTO GLP S/.</small>
+                    <input type="number" id="comb-costo-glp" placeholder="0.00" step="0.10" oninput="calcularCostoTotal()">
+                </div>
+                <div class="km-box">
+                    <small>COSTO GASOLINA S/.</small>
+                    <input type="number" id="comb-costo-gas" placeholder="0.00" step="0.10" oninput="calcularCostoTotal()">
+                </div>
+            </div>
+            <div class="total-recorrido" style="display:flex; align-items:center; justify-content:center; gap:8px; margin:6px 0;">
+                Costo total: <span id="comb-costo-total" style="color:var(--verde); font-weight:900;">S/. 0.00</span>
+            </div>
+            <button onclick="registrarCombustible()" style="width:100%; padding:14px; border:none; border-radius:12px; background:var(--verde); color:white; font-weight:900; font-size:14px; box-shadow:0 4px 0 #1e8449; margin-top:4px;">✅ REGISTRAR RECARGA</button>
+            <!-- Últimos 5 registros -->
+            <div style="margin-top:14px;">
+                <small style="color:rgba(255,255,255,0.5); font-size:11px; letter-spacing:1px;">ÚLTIMAS RECARGAS</small>
+                <div id="lista-combustible" style="margin-top:8px;"></div>
             </div>
         </div>
 
@@ -485,6 +538,16 @@
     <div id="modal-emojis" class="modal"><div class="modal-content" style="background: white; color: #333;"><h3 style="color: var(--azul);">Selecciona un Emoji</h3><div class="emoji-grid-container" id="grid-variedad"></div><button onclick="cerrarVariedad()" style="width:100%; margin-top:15px; padding:12px; border:none; border-radius:10px; background:var(--azul); font-weight:bold; color:white;">VOLVER</button></div></div>
     <div id="modal-mes" class="modal"><div class="modal-content"><h3>Mes</h3><div id="grid-meses" style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px;"></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">Cerrar</button></div></div>
     <div id="modal-semana" class="modal"><div class="modal-content"><h3>Semanas</h3><div style="display:flex; justify-content:center; gap:10px; align-items:center;"><button onclick="navegarSemana(-7)"> ◀ </button><span id="rango-semana-modal"></span><button onclick="navegarSemana(7)"> ▶ </button></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">OK</button></div></div>
+    <!-- MODAL HISTORIAL SERVICIOS ANUAL -->
+    <div id="modal-historial-servicios" class="modal">
+        <div class="modal-content" style="background:white; color:#333; max-height:85vh; overflow-y:auto; padding:20px;">
+            <h3 style="color:var(--oscuro); margin-bottom:5px;">🔧 Historial de Recargas</h3>
+            <p style="font-size:12px; color:#888; margin-bottom:12px;" id="txt-anio-historial"></p>
+            <div id="tabla-historial-servicios"></div>
+            <button onclick="cerrarModalesYModos()" style="width:100%; margin-top:12px; padding:12px; border:none; border-radius:12px; background:#eee; color:#666; font-weight:bold;">Cerrar</button>
+        </div>
+    </div>
+
     <div id="modal-anio" class="modal"><div class="modal-content"><h3>Año</h3><div style="display:flex; justify-content:center; gap:10px; align-items:center;"><button onclick="navegarAnio(-1)"> ◀ </button><span id="txt-anio-modal" style="font-size:24px; font-weight:bold;"></span><button onclick="navegarAnio(1)"> ▶ </button></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">OK</button></div></div>
 
     <!-- MODAL RESUMEN SEMANAL -->
@@ -727,15 +790,9 @@
             const p = document.getElementById('page-perfil');
             if(mostrar) {
                 pushEstado();
-                const ingresos = movs.filter(m => m.tipo === 'ingreso');
-                const gastos = movs.filter(m => m.tipo === 'gasto');
-                const ti = ingresos.reduce((a, b) => a + b.mon, 0);
-                const tg = gastos.reduce((a, b) => a + b.mon, 0);
-                document.getElementById('perf-ing').innerText = `S/. ${ti.toFixed(2)}`;
-                document.getElementById('perf-gas').innerText = `S/. ${tg.toFixed(2)}`;
-                document.getElementById('perf-regs').innerText = ingresos.length;
-                document.getElementById('perf-neto').innerText = `S/. ${(ti - tg).toFixed(2)}`;
                 cargarDatosVehiculo();
+                dibujarListaCombustible();
+                actualizarContadorServicios();
                 p.classList.remove('hidden');
             } else { p.classList.add('hidden'); }
         }
@@ -1060,6 +1117,169 @@
             }
         }
         // ===== FIN GPS MEJORADO =====
+
+        // ===== COMBUSTIBLE =====
+        let tipoCombustible = 'GLP';
+        let registrosCombustible = JSON.parse(localStorage.getItem('gt_combustible_v1')) || [];
+
+        function setCombustible(tipo) {
+            tipoCombustible = tipo;
+            const btnGlp = document.getElementById('btn-glp');
+            const btnGas = document.getElementById('btn-gasolina');
+            if (tipo === 'GLP') {
+                btnGlp.style.background = 'var(--naranja)'; btnGlp.style.opacity = '1';
+                btnGas.style.background = 'rgba(255,255,255,0.05)'; btnGas.style.color = 'rgba(255,255,255,0.6)';
+            } else {
+                btnGas.style.background = '#f39c12'; btnGas.style.color = 'white'; btnGas.style.opacity = '1';
+                btnGlp.style.background = 'rgba(255,255,255,0.05)'; btnGlp.style.color = 'rgba(255,255,255,0.6)';
+            }
+        }
+
+        function calcularDuracionCombustible() {
+            const kmCarga = parseFloat(document.getElementById('comb-km-carga').value) || 0;
+            const kmFin = parseFloat(document.getElementById('comb-km-fin').value) || 0;
+            const dur = kmFin > kmCarga ? kmFin - kmCarga : 0;
+            document.getElementById('comb-duracion').innerText = dur.toFixed(0) + ' KM';
+        }
+
+        function calcularCostoTotal() {
+            const glp = parseFloat(document.getElementById('comb-costo-glp').value) || 0;
+            const gas = parseFloat(document.getElementById('comb-costo-gas').value) || 0;
+            document.getElementById('comb-costo-total').innerText = 'S/. ' + (glp + gas).toFixed(2);
+        }
+
+        function registrarCombustible() {
+            const kmCarga = parseFloat(document.getElementById('comb-km-carga').value) || 0;
+            const kmFin = parseFloat(document.getElementById('comb-km-fin').value) || 0;
+            const costoGlp = parseFloat(document.getElementById('comb-costo-glp').value) || 0;
+            const costoGas = parseFloat(document.getElementById('comb-costo-gas').value) || 0;
+            const costoTotal = costoGlp + costoGas;
+            const duracion = kmFin > kmCarga ? kmFin - kmCarga : 0;
+
+            if (kmCarga <= 0) { alert('Ingresa el KM al cargar'); return; }
+            if (costoTotal <= 0) { alert('Ingresa el costo del combustible'); return; }
+
+            // Detectar tipo automáticamente
+            let tipo = 'GLP';
+            if (costoGlp > 0 && costoGas > 0) tipo = 'Dual';
+            else if (costoGas > 0) tipo = 'Gasolina';
+
+            const nuevo = {
+                tipo,
+                kmCarga, kmFin, duracion,
+                costoGlp, costoGas, costo: costoTotal,
+                fecha: new Date().toISOString(),
+                fechaStr: new Date().toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}),
+                serviciosDesdeAnterior: contarServiciosDesdeUltimaRecarga()
+            };
+
+            registrosCombustible.unshift(nuevo);
+            const anioActual = new Date().getFullYear();
+            registrosCombustible = registrosCombustible.filter(r => new Date(r.fecha).getFullYear() >= anioActual - 1);
+            localStorage.setItem('gt_combustible_v1', JSON.stringify(registrosCombustible));
+
+            // Guardar checkpoint de servicios
+            localStorage.setItem('gt_checkpoint_servicios', JSON.stringify({
+                fecha: new Date().toISOString(),
+                totalMovs: movs.filter(m => m.tipo === 'ingreso').length
+            }));
+
+            // KM culminar → pasa automáticamente a KM al cargar
+            document.getElementById('comb-km-carga').value = kmFin > 0 ? kmFin : '';
+            document.getElementById('comb-km-fin').value = '';
+            document.getElementById('comb-duracion').innerText = '0 KM';
+            document.getElementById('comb-costo-glp').value = '';
+            document.getElementById('comb-costo-gas').value = '';
+            document.getElementById('comb-costo-total').innerText = 'S/. 0.00';
+
+            dibujarListaCombustible();
+            actualizarContadorServicios();
+            alert('✅ Recarga registrada');
+        }
+
+        function contarServiciosDesdeUltimaRecarga() {
+            const checkpoint = JSON.parse(localStorage.getItem('gt_checkpoint_servicios'));
+            const totalActual = movs.filter(m => m.tipo === 'ingreso').length;
+            if (!checkpoint) return totalActual;
+            return totalActual - (checkpoint.totalMovs || 0);
+        }
+
+        function actualizarContadorServicios() {
+            const contador = contarServiciosDesdeUltimaRecarga();
+            const el = document.getElementById('contador-servicios-recarga');
+            if (el) el.innerText = contador;
+        }
+
+        function dibujarListaCombustible() {
+            const lista = document.getElementById('lista-combustible');
+            if (!lista) return;
+            const ultimos5 = registrosCombustible.slice(0, 5);
+            if (ultimos5.length === 0) {
+                lista.innerHTML = '<p style="color:rgba(255,255,255,0.3); font-size:12px; text-align:center;">Sin registros aún</p>';
+                return;
+            }
+            lista.innerHTML = ultimos5.map((r, i) => `
+                <div class="item-comb">
+                    <div>
+                        <div class="comb-tipo">${r.tipo === 'GLP' ? '🔵' : '🟡'} ${r.tipo}</div>
+                        <div class="comb-detail">${r.fechaStr} · ${r.serviciosDesdeAnterior || 0} servicios</div>
+                        <div class="comb-detail">📍 ${r.kmCarga} → ${r.kmFin > 0 ? r.kmFin : '?'} (${r.duracion > 0 ? r.duracion + ' KM' : 'pendiente'})</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:900; color:var(--naranja); font-size:15px;">S/. ${r.costo.toFixed(2)}</div>
+                        ${r.costoGlp > 0 ? `<div style="font-size:10px; color:rgba(255,255,255,0.5);">🔵 S/. ${r.costoGlp.toFixed(2)}</div>` : ''}
+                        ${r.costoGas > 0 ? `<div style="font-size:10px; color:rgba(255,255,255,0.5);">🟡 S/. ${r.costoGas.toFixed(2)}</div>` : ''}
+                        <div style="font-size:10px; color:rgba(255,255,255,0.4);">${r.duracion > 0 ? 'S/. '+(r.costo/r.duracion).toFixed(2)+'/KM' : ''}</div>
+                        <span onclick="eliminarCombustible(${i})" style="font-size:16px; cursor:pointer;">🗑️</span>
+                    </div>
+                </div>`).join('');
+        }
+
+        function eliminarCombustible(idx) {
+            if (confirm('¿Eliminar este registro?')) {
+                registrosCombustible.splice(idx, 1);
+                localStorage.setItem('gt_combustible_v1', JSON.stringify(registrosCombustible));
+                dibujarListaCombustible();
+                actualizarContadorServicios();
+            }
+        }
+
+        function abrirHistorialServicios() {
+            pushEstado();
+            const anioActual = new Date().getFullYear();
+            document.getElementById('txt-anio-historial').innerText = `Año ${anioActual}`;
+            const registrosAnio = registrosCombustible.filter(r => new Date(r.fecha).getFullYear() === anioActual);
+            let html = '';
+            let totalCosto = 0, totalKm = 0, totalServicios = 0;
+            if (registrosAnio.length === 0) {
+                html = '<p style="color:#aaa; text-align:center; padding:20px;">Sin registros este año</p>';
+            } else {
+                registrosAnio.forEach((r, i) => {
+                    totalCosto += r.costo;
+                    totalKm += r.duracion || 0;
+                    totalServicios += r.serviciosDesdeAnterior || 0;
+                    html += `<div style="display:flex; justify-content:space-between; padding:12px; border-radius:12px; margin-bottom:8px; background:#f8f9fa; border-left:4px solid var(--naranja);">
+                        <div>
+                            <b>${r.tipo === 'GLP' ? '🔵' : '🟡'} ${r.tipo} — ${r.fechaStr}</b><br>
+                            <small style="color:#888;">📍 ${r.kmCarga} → ${r.kmFin > 0 ? r.kmFin : '?'} · ${r.duracion > 0 ? r.duracion+' KM' : 'pendiente'}</small><br>
+                            <small style="color:#888;">🔧 ${r.serviciosDesdeAnterior || 0} servicios en este tanque</small>
+                        </div>
+                        <div style="text-align:right;">
+                            <b style="color:var(--naranja);">S/. ${r.costo.toFixed(2)}</b><br>
+                            <small style="color:#aaa;">${r.duracion > 0 ? 'S/. '+(r.costo/r.duracion).toFixed(2)+'/km' : ''}</small>
+                        </div>
+                    </div>`;
+                });
+                html += `<div style="background:#e8f4fd; border-radius:12px; padding:14px; margin-top:10px; border:2px solid var(--azul);">
+                    <div style="display:flex; justify-content:space-between; font-weight:900;"><span>⛽ Total gastado</span><span style="color:var(--naranja);">S/. ${totalCosto.toFixed(2)}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-weight:900; margin-top:5px;"><span>🛣️ KM totales</span><span style="color:var(--azul);">${totalKm.toFixed(0)} KM</span></div>
+                    <div style="display:flex; justify-content:space-between; font-weight:900; margin-top:5px;"><span>🚕 Servicios totales</span><span style="color:var(--verde);">${totalServicios}</span></div>
+                </div>`;
+            }
+            document.getElementById('tabla-historial-servicios').innerHTML = html;
+            document.getElementById('modal-historial-servicios').style.display = 'flex';
+        }
+        // ===== FIN COMBUSTIBLE =====
 
         function verQRDirecto(clave) {
             const data = localStorage.getItem(clave);
