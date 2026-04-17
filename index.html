@@ -21,13 +21,13 @@
         .loader { width: 150px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 30px; position: relative; overflow: hidden; }
         .loader::after { content: ""; position: absolute; left: -100%; width: 100%; height: 100%; background: var(--verde); animation: load 3s forwards; }
         @keyframes load { to { left: 0; } }
-        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 15px; display: flex; flex-direction: column; background: var(--gris); transition: transform 0.4s ease-in-out; }
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 15px; display: flex; flex-direction: column; background: var(--gris); transition: transform 0.4s ease-in-out; overflow-y: auto; }
         .hidden { transform: translateX(100%); }
         #contenedor-meta { width: 100%; height: 12px; background: #e0e0e0; position: absolute; top: 0; left: 0; cursor: pointer; z-index: 50; border-bottom: 1px solid var(--naranja); }
         #progreso-meta { height: 100%; width: 0%; background: var(--verde); transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .header-perfil { display: flex; justify-content: flex-end; padding: 15px 5px 5px 5px; }
         .btn-perfil { background: #fff; border: 1px solid #ddd; padding: 8px 15px; border-radius: 12px; font-weight: bold; font-size: 12px; cursor: pointer; }
-        .main-balance-container { text-align: center; margin: 20px 0; cursor: pointer; user-select: none; }
+        .main-balance-container { text-align: center; margin: 10px 0; cursor: pointer; user-select: none; }
         #saldo-principal { font-size: 48px; font-weight: 900; color: var(--oscuro); display: block; }
         .lbl-balance { font-size: 12px; font-weight: bold; color: #888; }
         .btn-gps-principal { width: 100%; padding: 22px 10px; border-radius: 20px; border: none; color: white; font-weight: 900; font-size: 24px; background: var(--naranja); box-shadow: 0 6px 0 #d35400; margin-bottom: 15px; }
@@ -302,6 +302,61 @@
         .item-comb .comb-tipo { font-weight:900; font-size:13px; }
         .item-comb .comb-detail { color:rgba(255,255,255,0.5); font-size:11px; }
         /* ===== FIN COMBUSTIBLE ===== */
+
+        /* ===== RESPONSIVE VENTANA PEQUEÑA ===== */
+
+        /* Pantalla pequeña: < 400px ancho */
+        @media (max-width: 400px) {
+            /* Balance más compacto */
+            #saldo-principal { font-size: 34px !important; }
+            .lbl-balance { font-size: 10px !important; }
+
+            /* Botón GPS más compacto */
+            .btn-gps-principal { padding: 14px 10px !important; font-size: 18px !important; margin-bottom: 8px !important; }
+
+            /* Categorías más pequeñas */
+            .cat-chip { padding: 8px 12px !important; font-size: 12px !important; }
+
+            /* Métodos de pago: scroll horizontal más compacto */
+            .metodo-btn { min-width: 60px !important; padding: 8px 4px !important; font-size: 9px !important; }
+
+            /* Input monto más compacto */
+            .input-monto { padding: 12px !important; font-size: 18px !important; }
+            .btn-engranaje { width: 50px !important; font-size: 20px !important; }
+
+            /* Inputs KM y horas */
+            .input-auto-visual { padding: 8px 4px !important; font-size: 12px !important; }
+
+            /* Barra config */
+            .barra-config { padding: 8px 5px 3px 5px !important; gap: 5px !important; }
+            .btn-config-small { padding: 5px 8px !important; font-size: 10px !important; }
+
+            /* QR botones */
+            .btn-qr { padding: 10px !important; font-size: 12px !important; }
+
+            /* Margen general reducido */
+            .page { padding: 10px !important; }
+            .main-balance-container { margin: 8px 0 !important; }
+        }
+
+        /* Pantalla muy pequeña: < 320px */
+        @media (max-width: 320px) {
+            #saldo-principal { font-size: 26px !important; }
+            .btn-gps-principal { font-size: 14px !important; padding: 10px !important; }
+            .metodo-btn { min-width: 50px !important; font-size: 8px !important; }
+            .input-monto { font-size: 16px !important; }
+        }
+
+        /* Altura pequeña: ventana flotante baja */
+        @media (max-height: 500px) {
+            .main-balance-container { margin: 4px 0 !important; }
+            #saldo-principal { font-size: 28px !important; }
+            .btn-gps-principal { padding: 10px !important; font-size: 16px !important; margin-bottom: 6px !important; }
+            .contenedor-cats { padding: 4px 0 !important; margin-bottom: 5px !important; }
+            .metodos-pago { margin-bottom: 8px !important; }
+        }
+
+        /* ===== FIN RESPONSIVE ===== */
 
         /* ===== FIN NUEVOS ESTILOS ===== */
     </style>
