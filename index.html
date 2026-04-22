@@ -2,617 +2,1143 @@
 <html lang="es">
 <head>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#3498db">
+<meta name="theme-color" content="#0f172a">
 <link rel="apple-touch-icon" href="logo_gt.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>GT PUREQ - Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+    --verde: #22c55e; --rojo: #ef4444; --azul: #3b82f6;
+    --naranja: #f59e0b; --yape: #742284; --plin: #00b4ff;
+    --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+    --surface: #1e293b; --surface2: #334155;
+    --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+    --border: rgba(255,255,255,0.08);
+    --accent: #f59e0b;
+    --radius: 16px; --radius-sm: 10px; --radius-lg: 24px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+body.light {
+    --bg: #f1f5f9; --bg2: #ffffff; --bg3: #e2e8f0;
+    --surface: #ffffff; --surface2: #f8fafc;
+    --text: #0f172a; --text2: #475569; --text3: #94a3b8;
+    --border: rgba(0,0,0,0.08);
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GT PUREQ - Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+/* ===== RESET ===== */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-family: 'Space Grotesk', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); max-width: 100vw; }
+.page { max-width: 100vw; overflow-x: hidden; }
+.page-scroll { max-width: 100%; overflow-x: hidden; }
 
-    <style>
-        :root { --verde: #27ae60; --rojo: #e74c3c; --oscuro: #2c3e50; --azul: #3498db; --naranja: #f39c12; --gris: #f0f2f5; --yape: #742284; --plin: #00b4ff; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #2c3e50 0%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: white; transition: opacity 0.8s ease; }
-        .logo-gt { font-size: 280px; font-weight: 900; font-family: 'Arial Black', sans-serif; background: linear-gradient(145deg, #fff 40%, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); letter-spacing: -5px; }
-        .m-software { font-size: 12px; letter-spacing: 4px; opacity: 0.7; margin-top: -10px; }
-        .loader { width: 150px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 30px; position: relative; overflow: hidden; }
-        .loader::after { content: ""; position: absolute; left: -100%; width: 100%; height: 100%; background: var(--verde); animation: load 3s forwards; }
-        @keyframes load { to { left: 0; } }
-        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 15px; display: flex; flex-direction: column; background: var(--gris); transition: transform 0.4s ease-in-out; }
-        .hidden { transform: translateX(100%); }
-        #contenedor-meta { width: 100%; height: 12px; background: #e0e0e0; position: absolute; top: 0; left: 0; cursor: pointer; z-index: 50; border-bottom: 1px solid var(--naranja); }
-        #progreso-meta { height: 100%; width: 0%; background: var(--verde); transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .header-perfil { display: flex; justify-content: flex-end; padding: 15px 5px 5px 5px; }
-        .btn-perfil { background: #fff; border: 1px solid #ddd; padding: 8px 15px; border-radius: 12px; font-weight: bold; font-size: 12px; cursor: pointer; }
-        .main-balance-container { text-align: center; margin: 20px 0; cursor: pointer; user-select: none; }
-        #saldo-principal { font-size: 48px; font-weight: 900; color: var(--oscuro); display: block; }
-        .lbl-balance { font-size: 12px; font-weight: bold; color: #888; }
-        .btn-gps-principal { width: 100%; padding: 22px 10px; border-radius: 20px; border: none; color: white; font-weight: 900; font-size: 24px; background: var(--naranja); box-shadow: 0 6px 0 #d35400; margin-bottom: 15px; }
-        .contenedor-qr-doble { display: flex; gap: 10px; margin-top: 5px; }
-        .wrapper-qr { flex: 1; position: relative; display: flex; align-items: stretch; }
-        .btn-qr { flex: 1; padding: 14px; border-radius: 15px; border: none; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 4px 0 rgba(0,0,0,0.2); text-align: center; }
-        .btn-lapiz-qr { position: absolute; top: 0; right: 0; height: 100%; width: 35px; background: rgba(0,0,0,0.1); border-radius: 0 15px 15px 0; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; border-left: 1px solid rgba(255,255,255,0.2); }
-        .contenedor-cats { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 10px; scrollbar-width: none; }
-        .cat-chip { flex: 0 0 auto; background: #fff; padding: 12px 20px; border-radius: 50px; border: 2px solid #ccc; font-weight: bold; font-size: 14px; }
-        .cat-chip.activa { border-color: var(--azul); background: #e8f4fd; color: var(--azul); }
-        .metodos-pago { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .metodo-btn { flex: 1; min-width: 80px; padding: 12px 5px; border-radius: 12px; border: 1px solid #ddd; background: #fff; font-size: 10px; font-weight: bold; text-align: center; }
-        .metodo-btn.active { background: var(--oscuro); color: white; border-color: var(--oscuro); }
-        .input-monto { flex: 1; padding: 18px; border-radius: 30px; border: 2px solid #ddd; font-size: 24px; text-align: center; font-weight: bold; outline: none; min-width: 0; }
-        .btn-engranaje { width: 65px; border-radius: 15px; border: 1px solid #ddd; background: #fff; font-size: 24px; box-shadow: 0 4px 0 #ccc; flex-shrink: 0; }
-        .input-auto-visual { flex: 1; min-width: 0; padding: 12px 5px; border-radius: 12px; background: #fffdf0; border: 2px solid var(--naranja); text-align: center; font-weight: bold; color: var(--naranja); font-size: 14px; outline: none; }
-        #page-perfil { z-index: 150; background: var(--oscuro); color: white; overflow-y: auto; }
-        .card-perfil { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 25px; margin-top: 60px; text-align: center; }
-        .foto-perfil-circulo { width: 100px; height: 100px; background: #555; border-radius: 50%; margin: 0 auto 15px; border: 4px solid var(--azul); overflow: hidden; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .foto-perfil-circulo img { width: 100%; height: 100%; object-fit: cover; }
-        .edit-nombre-btn { background: none; border: none; color: var(--azul); font-size: 14px; font-weight: bold; cursor: pointer; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .stat-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; }
-        #page-reportes { z-index: 100; overflow-y: auto; background: white; }
-        .btn-volver { background: none; border: none; font-size: 28px; padding: 15px; position: absolute; top: 0; left: 0; z-index: 10; color: inherit; }
-        .nav-periodos { display: flex; justify-content: space-around; margin-top: 50px; border-bottom: 1px solid #eee; }
-        .tab-btn { padding: 12px; border: none; background: none; font-weight: bold; color: #888; }
-        .tab-btn.active { color: var(--azul); border-bottom: 3px solid var(--azul); }
-        .filtros-pago-reporte { display: flex; gap: 5px; padding: 10px 15px; background: #f9f9f9; border-bottom: 1px solid #eee; overflow-x: auto; }
-        .btn-filtro-pago { flex: 0 0 auto; padding: 8px 12px; border-radius: 10px; border: 1px solid #ddd; background: white; font-size: 10px; font-weight: bold; color: #666; }
-        .btn-filtro-pago.active { background: var(--azul); color: white; border-color: var(--azul); }
-        .caja-grafico { position: relative; height: 180px; background: #fff; border-radius: 20px; padding: 5px; border: 2px solid #eee; margin-bottom: 10px; }
-        .item-mov { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f5f5f5; font-size: 14px; border-left: 5px solid transparent; }
-        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; z-index:1000; }
-        .modal-content { background: var(--azul); padding: 25px; border-radius: 25px; width: 95%; max-width: 400px; color: white; text-align: center; position: relative; }
-        .btn-emoji-selector { width: 55px; height: 55px; border-radius: 50%; border: 2px dashed white; background: rgba(255,255,255,0.2); font-size: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .emoji-grid-container { background: white; border-radius: 15px; padding: 10px; color: #333; max-height: 300px; overflow-y: auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
-        .emoji-option { font-size: 30px; padding: 5px; cursor: pointer; }
+/* ===== SPLASH ===== */
+#splash {
+    position: fixed; inset: 0; z-index: 9999;
+    background: radial-gradient(ellipse at 30% 20%, #1e3a5f 0%, #0f172a 60%, #000 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
+    transition: opacity 0.8s ease;
+}
+.splash-logo { font-size: 120px; font-weight: 800; letter-spacing: -4px;
+    background: linear-gradient(135deg, #f59e0b 0%, #ffffff 50%, #3b82f6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.splash-sub { font-size: 11px; letter-spacing: 6px; color: rgba(255,255,255,0.4); margin-top: 4px; text-transform: uppercase; }
+.splash-loader { width: 120px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 99px; margin-top: 40px; overflow: hidden; }
+.splash-loader::after { content: ""; display: block; height: 100%; width: 0; background: linear-gradient(90deg, #f59e0b, #3b82f6); animation: splash-load 2.8s forwards cubic-bezier(.4,0,.2,1); }
+@keyframes splash-load { to { width: 100%; } }
 
-        /* ===== NUEVOS ESTILOS: CONTROL DE VEHÍCULO Y MANTENIMIENTO ===== */
-        .card-vehiculo {
-            background: rgba(255,255,255,0.08);
-            border-radius: 20px;
-            padding: 18px;
-            margin-top: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .card-vehiculo h4 {
-            margin: 0 0 14px 0;
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--naranja);
-            letter-spacing: 0.5px;
-        }
-        .km-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .km-box {
-            background: rgba(0,0,0,0.25);
-            border-radius: 14px;
-            padding: 14px 10px;
-            text-align: center;
-        }
-        .km-box small {
-            display: block;
-            font-size: 10px;
-            color: rgba(255,255,255,0.55);
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-        }
-        .km-box input {
-            background: none;
-            border: none;
-            border-bottom: 2px solid rgba(255,255,255,0.3);
-            color: white;
-            font-size: 22px;
-            font-weight: 900;
-            text-align: center;
-            width: 100%;
-            outline: none;
-            padding: 2px 0;
-        }
-        .km-box input:focus {
-            border-bottom-color: var(--azul);
-        }
-        .km-box b {
-            font-size: 22px;
-            font-weight: 900;
-        }
-        .total-recorrido {
-            text-align: center;
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            padding: 8px 0 4px;
-        }
-        .total-recorrido span {
-            color: var(--azul);
-            font-weight: 900;
-            font-size: 18px;
-        }
+/* ===== PAGES ===== */
+.page {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    background: var(--bg);
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    overflow: hidden; z-index: 1;
+}
+.page.hidden { transform: translateX(100%); pointer-events: none; }
+#page-reportes, #page-perfil, #page-costos { z-index: 10; }
+.page-scroll { flex: 1; overflow-y: auto; padding: 0 15px 20px; -webkit-overflow-scrolling: touch; }
+.page-scroll::-webkit-scrollbar { display: none; }
 
-        /* Separador */
-        .separador-card {
-            height: 1px;
-            background: rgba(255,255,255,0.1);
-            margin: 16px 0;
-        }
+/* ===== TOP BAR ===== */
+.top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 12px 6px;
+    position: relative; z-index: 10;
+    flex-shrink: 0; overflow: hidden;
+}
+.top-bar-left { font-size: 12px; font-weight: 800; color: var(--text3); flex-shrink: 0; }
+.top-bar-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+.btn-icon {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 9px;
+    font-size: 11px; font-weight: 700; color: var(--text2);
+    cursor: pointer; display: flex; align-items: center; gap: 4px;
+    transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+}
+.btn-icon:active { transform: scale(0.95); opacity: 0.8; }
+.btn-icon.active-dark { background: var(--azul); color: white; border-color: var(--azul); }
 
-        /* Plan de Mantenimiento */
-        .mant-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 14px;
-        }
-        .mant-box {
-            background: rgba(0,0,0,0.25);
-            border-radius: 14px;
-            padding: 14px 10px;
-            text-align: center;
-        }
-        .mant-box small {
-            display: block;
-            font-size: 10px;
-            color: rgba(255,255,255,0.55);
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-        }
-        .mant-box input {
-            background: none;
-            border: none;
-            border-bottom: 2px solid rgba(255,255,255,0.3);
-            color: white;
-            font-size: 22px;
-            font-weight: 900;
-            text-align: center;
-            width: 100%;
-            outline: none;
-            padding: 2px 0;
-        }
-        .mant-box input:focus { border-bottom-color: var(--naranja); }
-        .mant-box.proximo input { border-bottom-color: rgba(243,156,18,0.5); }
+/* ===== META BAR ===== */
+#meta-bar-wrap {
+    height: 3px; background: var(--bg3);
+    cursor: pointer; flex-shrink: 0; position: relative;
+}
+#progreso-meta {
+    height: 100%; width: 0%; background: var(--verde);
+    transition: width 0.6s cubic-bezier(.175,.885,.32,1.275);
+    position: relative;
+}
+#progreso-meta::after {
+    content: ""; position: absolute; right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--verde); box-shadow: 0 0 8px var(--verde);
+}
 
-        .faltan-label {
-            text-align: center;
-            font-size: 12px;
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 6px;
-            letter-spacing: 1px;
-        }
-        .faltan-valor {
-            text-align: center;
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--naranja);
-            margin-bottom: 10px;
-        }
-        .faltan-valor.ok { color: var(--verde); }
-        .faltan-valor.alerta { color: var(--rojo); }
+/* ===== BALANCE CARD ===== */
+.balance-card {
+    background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%);
+    border-radius: var(--radius-lg); padding: 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 12px; cursor: pointer;
+    position: relative; overflow: hidden;
+}
+.balance-card::before {
+    content: ""; position: absolute;
+    top: -40px; right: -40px; width: 120px; height: 120px;
+    border-radius: 50%; background: rgba(245,158,11,0.08);
+}
+.balance-label { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.balance-amount { font-size: 42px; font-weight: 800; color: var(--text); letter-spacing: -1px; line-height: 1; }
+.balance-sub { font-size: 12px; color: var(--text3); margin-top: 4px; font-weight: 500; }
 
-        .barra-mant-wrap {
-            width: 100%;
-            height: 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .barra-mant-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: var(--verde);
-        }
+/* ===== GPS BUTTON ===== */
+.btn-turno {
+    width: 100%; padding: 18px; border-radius: var(--radius);
+    border: none; color: white; font-weight: 800; font-size: 18px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 20px rgba(245,158,11,0.4);
+    margin-bottom: 12px; cursor: pointer; letter-spacing: 0.5px;
+    transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-turno:active { transform: scale(0.98); }
+.btn-turno.activo { background: linear-gradient(135deg, #475569, #334155); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
-        /* ===== TEMA OSCURO ===== */
-        body.dark-mode { --gris: #1a1a2e; }
-        body.dark-mode .page { background: #1a1a2e; }
-        body.dark-mode .btn-perfil { background: #2d2d44; border-color: #444; color: #eee; }
-        body.dark-mode .cat-chip { background: #2d2d44; border-color: #444; color: #eee; }
-        body.dark-mode .cat-chip.activa { background: #1a3a5c; border-color: var(--azul); color: var(--azul); }
-        body.dark-mode .metodo-btn { background: #2d2d44; border-color: #444; color: #eee; }
-        body.dark-mode .metodo-btn.active { background: var(--azul); color: white; border-color: var(--azul); }
-        body.dark-mode .input-monto { background: #2d2d44; border-color: #444; color: #eee; }
-        body.dark-mode .btn-engranaje { background: #2d2d44; border-color: #444; color: #eee; box-shadow: 0 4px 0 #111; }
-        body.dark-mode .input-auto-visual { background: #2d2d44; }
-        body.dark-mode #saldo-principal { color: #eee; }
-        body.dark-mode .lbl-balance { color: #aaa; }
-        body.dark-mode #contenedor-meta { background: #2d2d44; }
-        body.dark-mode #page-reportes { background: #1a1a2e; color: #eee; }
-        body.dark-mode .nav-periodos { border-color: #444; }
-        body.dark-mode .tab-btn { color: #888; }
-        body.dark-mode .filtros-pago-reporte { background: #2d2d44; border-color: #444; }
-        body.dark-mode .btn-filtro-pago { background: #3a3a55; border-color: #555; color: #ccc; }
-        body.dark-mode .caja-grafico { background: #2d2d44; border-color: #444; }
-        body.dark-mode #resumen-turno-card { background: #2d2d44; border-color: #444; color: #eee; }
-        body.dark-mode #resumen-turno-card div { background: #3a3a55 !important; border-color: #555 !important; }
-        body.dark-mode .item-mov { border-bottom-color: #333; }
-        body.dark-mode .modal-content { }
+/* ===== CATS & METODOS ===== */
+.chips-row { display: flex; gap: 8px; overflow-x: auto; overflow-y: visible; padding: 2px 0 8px; scrollbar-width: none; margin-bottom: 4px; -webkit-overflow-scrolling: touch; }
+.chips-row::-webkit-scrollbar { display: none; }
+.chip {
+    flex: 0 0 auto; padding: 8px 14px; border-radius: 99px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    font-weight: 600; font-size: 12px; color: var(--text2); cursor: pointer;
+    transition: all 0.15s; white-space: nowrap; max-width: none;
+}
+.chip.activa { border-color: var(--azul); background: rgba(59,130,246,0.15); color: var(--azul); }
+.chip.metodo-active { border-color: var(--accent); background: rgba(245,158,11,0.15); color: var(--accent); }
 
-        /* Barra configuración */
-        .barra-config {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 8px;
-            padding: 15px 5px 5px 5px;
-        }
-        .btn-config-small {
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 7px 12px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-        body.dark-mode .btn-config-small {
-            background: #2d2d44;
-            border-color: #444;
-            color: #eee;
-        }
-        .btn-config-small.active-dark {
-            background: #2c3e50;
-            color: white;
-            border-color: #2c3e50;
-        }
-        /* ===== RESUMEN SEMANAL ===== */
-        .fila-dia { display:flex; justify-content:space-between; align-items:center; padding:11px 14px; border-radius:12px; margin-bottom:7px; background:#f8f9fa; border:1px solid #eee; }
-        .fila-dia.hoy { background:#e8f4fd; border:2px solid var(--azul); }
-        .fila-dia.confirmado { background:#f0fff4; border:1px solid var(--verde); }
-        .dia-nombre { font-weight:900; font-size:14px; min-width:35px; }
-        .dia-km { font-weight:900; color:var(--azul); font-size:14px; }
-        .dia-ing { font-weight:bold; color:var(--verde); font-size:13px; }
-        .dia-vacio { color:#bbb; font-size:12px; font-style:italic; }
-        #txt-rango-semana-resumen { font-size:12px; color:#888; margin:0 0 12px; }
-        /* ===== FIN RESUMEN SEMANAL ===== */
+/* ===== INPUT ROW ===== */
+.input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.input-monto {
+    flex: 1; padding: 16px 20px; border-radius: var(--radius);
+    border: 1.5px solid var(--border); background: var(--surface);
+    font-size: 26px; text-align: center; font-weight: 800;
+    outline: none; color: var(--text); min-width: 0;
+    transition: border-color 0.2s;
+}
+.input-monto:focus { border-color: var(--azul); }
+.btn-engranaje {
+    width: 58px; border-radius: var(--radius); border: 1.5px solid var(--border);
+    background: var(--surface); font-size: 22px; flex-shrink: 0; cursor: pointer;
+    color: var(--text2); transition: all 0.2s;
+}
+.btn-engranaje:active { transform: rotate(45deg); }
 
-        /* ===== COMBUSTIBLE ===== */
-        .item-comb { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:12px; margin-bottom:6px; background:rgba(0,0,0,0.2); border-left:4px solid var(--naranja); font-size:12px; color:rgba(255,255,255,0.85); }
-        .item-comb .comb-tipo { font-weight:900; font-size:13px; }
-        .item-comb .comb-detail { color:rgba(255,255,255,0.5); font-size:11px; }
-        /* ===== FIN COMBUSTIBLE ===== */
+/* ===== GPS INFO ROW ===== */
+.gps-info-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.gps-badge {
+    flex: 1; padding: 12px 8px; border-radius: var(--radius-sm);
+    background: var(--surface); border: 1.5px solid var(--accent);
+    text-align: center; font-weight: 700; color: var(--accent);
+    font-size: 13px; outline: none;
+}
 
-        /* ===== FIN TEMA OSCURO ===== */
-        /* ===== RESUMEN SEMANAL ===== */
-        .fila-dia {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 12px;
-            border-radius: 12px;
-            margin-bottom: 6px;
-            background: rgba(255,255,255,0.05);
-        }
-        .fila-dia.hoy { background: rgba(52,152,219,0.2); border: 1px solid var(--azul); }
-        .fila-dia.confirmado { background: rgba(39,174,96,0.15); border: 1px solid var(--verde); }
-        .fila-dia .dia-nombre { font-weight: bold; font-size: 13px; min-width: 35px; }
-        .fila-dia .dia-km { color: var(--azul); font-weight: bold; font-size: 13px; }
-        .fila-dia .dia-ing { color: var(--verde); font-weight: bold; font-size: 13px; }
-        .fila-dia .dia-vacio { color: #555; font-size: 12px; }
-        /* ===== FIN RESUMEN SEMANAL ===== */
+/* ===== ACTION BUTTONS ===== */
+.action-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.btn-accion {
+    flex: 1; padding: 18px 10px; border-radius: var(--radius);
+    border: none; color: white; font-weight: 800; font-size: 17px;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px;
+}
+.btn-accion:active { transform: scale(0.97); }
+.btn-ingreso { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 4px 16px rgba(34,197,94,0.3); }
+.btn-gasto { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
 
-        /* ===== COMBUSTIBLE ===== */
-        .item-comb { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:12px; margin-bottom:6px; background:rgba(0,0,0,0.2); border-left:4px solid var(--naranja); font-size:12px; color:rgba(255,255,255,0.85); }
-        .item-comb .comb-tipo { font-weight:900; font-size:13px; }
-        .item-comb .comb-detail { color:rgba(255,255,255,0.5); font-size:11px; }
-        /* ===== FIN COMBUSTIBLE ===== */
+/* ===== QR ROW ===== */
+.qr-row { display: flex; gap: 10px; margin-bottom: 8px; }
+.qr-wrap { flex: 1; position: relative; display: flex; }
+.btn-qr {
+    flex: 1; padding: 13px 35px 13px 14px; border-radius: var(--radius-sm);
+    border: none; color: white; font-weight: 700; font-size: 13px;
+    cursor: pointer; text-align: left;
+}
+.btn-qr-edit {
+    position: absolute; top: 0; right: 0; height: 100%; width: 34px;
+    background: rgba(0,0,0,0.15); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; cursor: pointer; border-left: 1px solid rgba(255,255,255,0.15);
+}
 
-        /* ===== RESPONSIVE VENTANA PEQUEÑA ===== */
+/* ===== LINK REPORTES ===== */
+.link-reportes {
+    text-align: center; padding: 10px 0 4px;
+    font-size: 13px; font-weight: 700; color: var(--azul); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+}
 
-        /* Solo ventana flotante pequeña: < 360px ancho
-           El Redmi Note 13 Pro en pantalla completa tiene ~393px
-           así que 360px solo aplica en ventana flotante */
-        @media (max-width: 360px) {
-            #saldo-principal { font-size: 34px !important; }
-            .lbl-balance { font-size: 10px !important; }
-            .btn-gps-principal { padding: 14px 10px !important; font-size: 18px !important; margin-bottom: 8px !important; }
-            .cat-chip { padding: 8px 12px !important; font-size: 12px !important; }
-            .metodo-btn { min-width: 60px !important; padding: 8px 4px !important; font-size: 9px !important; }
-            .input-monto { padding: 12px !important; font-size: 18px !important; }
-            .btn-engranaje { width: 50px !important; font-size: 20px !important; }
-            .input-auto-visual { padding: 8px 4px !important; font-size: 12px !important; }
-            .barra-config { padding: 8px 5px 3px 5px !important; gap: 5px !important; }
-            .btn-config-small { padding: 5px 8px !important; font-size: 10px !important; }
-            .btn-qr { padding: 10px !important; font-size: 12px !important; }
-            .page { padding: 10px !important; overflow-y: auto !important; }
-            .main-balance-container { margin: 8px 0 !important; }
-        }
+/* ===== PAGE HEADER ===== */
+.page-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 12px 10px; flex-shrink: 0;
+    background: var(--bg); z-index: 10;
+}
+.btn-back {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 18px; cursor: pointer; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.page-title { font-size: 20px; font-weight: 800; color: var(--text); }
 
-        /* Ventana muy pequeña: < 300px */
-        @media (max-width: 300px) {
-            #saldo-principal { font-size: 22px !important; }
-            .btn-gps-principal { font-size: 13px !important; padding: 10px !important; }
-            .metodo-btn { min-width: 45px !important; font-size: 8px !important; }
-            .input-monto { font-size: 15px !important; }
-        }
+/* ===== REPORTES ===== */
+#page-reportes { background: var(--bg); }
+.period-tabs {
+    display: flex; background: var(--surface); border-radius: var(--radius-sm);
+    padding: 4px; margin: 0 15px 12px; gap: 2px; flex-shrink: 0;
+}
+.period-tab {
+    flex: 1; padding: 9px 6px; border: none; border-radius: 8px;
+    background: none; font-weight: 600; font-size: 13px;
+    color: var(--text3); cursor: pointer; transition: all 0.2s;
+}
+.period-tab.active { background: var(--azul); color: white; }
+.filter-row {
+    display: flex; gap: 6px; padding: 0 15px 12px;
+    overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-chip {
+    flex: 0 0 auto; padding: 7px 12px; border-radius: 99px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    font-size: 11px; font-weight: 700; color: var(--text3); cursor: pointer;
+}
+.filter-chip.active { background: var(--azul); color: white; border-color: var(--azul); }
+.date-picker-wrap { padding: 0 15px 12px; flex-shrink: 0; }
+.date-picker-wrap input[type=date] {
+    width: 100%; padding: 11px 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--surface);
+    color: var(--text); font-weight: 600; font-size: 14px; outline: none;
+}
+.date-nav { display: none; align-items: center; justify-content: center; gap: 16px; cursor: pointer; }
+.date-nav-btn {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--surface);
+    border: 1px solid var(--border); color: var(--text); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.date-nav-label { font-weight: 700; font-size: 14px; color: var(--text); }
 
-        /* Altura muy pequeña: ventana flotante horizontal */
-        @media (max-height: 400px) {
-            .main-balance-container { margin: 4px 0 !important; }
-            #saldo-principal { font-size: 26px !important; }
-            .btn-gps-principal { padding: 10px !important; font-size: 15px !important; margin-bottom: 5px !important; }
-            .contenedor-cats { padding: 4px 0 !important; margin-bottom: 4px !important; }
-            .metodos-pago { margin-bottom: 6px !important; }
-            .page { overflow-y: auto !important; }
-        }
+.charts-row { display: flex; gap: 10px; padding: 0 15px 12px; flex-shrink: 0; min-width: 0; }
+.chart-card {
+    flex: 1; min-width: 0; border-radius: var(--radius); background: var(--surface);
+    border: 1px solid var(--border); padding: 12px; position: relative; height: 160px;
+}
+.chart-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center; z-index: 1; pointer-events: none; }
+.chart-label small { font-size: 10px; font-weight: 600; display: block; margin-bottom: 3px; }
+.chart-label b { font-size: 15px; font-weight: 800; }
 
-        /* ===== FIN RESPONSIVE ===== */
+.rendimiento-card {
+    margin: 0 15px 12px; border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--border); padding: 14px;
+    flex-shrink: 0;
+}
+.rendimiento-title { font-size: 12px; font-weight: 700; color: var(--text3); letter-spacing: 1px; margin-bottom: 10px; }
+.rendimiento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rendimiento-item {
+    background: var(--bg2); border-radius: var(--radius-sm);
+    padding: 12px; text-align: center; border: 1px solid var(--border);
+}
+.rendimiento-item small { display: block; font-size: 10px; color: var(--text3); margin-bottom: 4px; font-weight: 600; }
+.rendimiento-item b { font-size: 16px; font-weight: 800; color: var(--azul); }
 
-        /* ===== FIN NUEVOS ESTILOS ===== */
-    </style>
+.mov-list { padding: 0 15px; }
+.mov-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 13px 14px; border-radius: var(--radius-sm); margin-bottom: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 4px solid transparent;
+}
+.mov-item-left { flex: 1; min-width: 0; }
+.mov-item-title { font-weight: 700; font-size: 14px; color: var(--text); }
+.mov-item-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.mov-item-right { text-align: right; flex-shrink: 0; margin-left: 10px; }
+.mov-item-amount { font-size: 16px; font-weight: 800; }
+.mov-item-actions { margin-top: 4px; }
+.mov-action-btn { background: none; border: none; font-size: 14px; cursor: pointer; padding: 2px 4px; }
+
+.btn-wa {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: calc(100% - 30px); margin: 12px 15px;
+    padding: 16px; border-radius: var(--radius); border: none;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white; font-weight: 800; font-size: 15px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(37,211,102,0.3);
+}
+
+/* ===== PERFIL ===== */
+#page-perfil { background: var(--bg); }
+.perfil-hero {
+    text-align: center; padding: 10px 15px 20px;
+}
+.foto-wrap {
+    width: 88px; height: 88px; border-radius: 50%;
+    margin: 0 auto 12px; background: var(--surface);
+    border: 3px solid var(--azul); overflow: hidden;
+    cursor: pointer; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.2);
+}
+.foto-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.perfil-nombre { font-size: 22px; font-weight: 800; color: var(--text); }
+.btn-edit-nombre {
+    background: none; border: none; color: var(--azul);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 4px; margin: 4px auto 0;
+}
+
+/* Contador servicios */
+.servicios-counter {
+    margin: 0 15px 12px;
+    background: linear-gradient(135deg, var(--bg2), var(--bg3));
+    border-radius: var(--radius); padding: 16px 20px;
+    border: 1px solid var(--border); cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.servicios-counter-left small { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 1px; display: block; margin-bottom: 4px; }
+.servicios-counter-left .num { font-size: 38px; font-weight: 800; color: var(--text); line-height: 1; }
+.servicios-counter-right { font-size: 24px; opacity: 0.4; }
+
+/* Cards vehiculo y combustible */
+.card-section {
+    margin: 0 15px 12px;
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden;
+}
+.card-section-header {
+    padding: 14px 16px 10px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+}
+.card-section-header h4 { font-size: 14px; font-weight: 800; color: var(--text); flex: 1; }
+.card-section-body { padding: 14px 16px; }
+.card-section-sub { font-size: 11px; color: var(--text3); font-weight: 600; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
+
+.km-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.km-box {
+    background: var(--bg2); border-radius: var(--radius-sm);
+    padding: 12px 10px; text-align: center; border: 1px solid var(--border);
+}
+.km-box small { display: block; font-size: 10px; color: var(--text3); margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; }
+.km-box input {
+    background: none; border: none; border-bottom: 1.5px solid var(--border);
+    color: var(--text); font-size: 20px; font-weight: 800;
+    text-align: center; width: 100%; outline: none; padding: 2px 0;
+    transition: border-color 0.2s;
+}
+.km-box input:focus { border-bottom-color: var(--azul); }
+
+.total-row {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 8px 0; font-size: 13px; color: var(--text3); font-weight: 600;
+}
+.total-row span { color: var(--azul); font-weight: 800; font-size: 16px; }
+
+.barra-wrap { height: 6px; background: var(--bg3); border-radius: 99px; overflow: hidden; margin-top: 8px; }
+.barra-fill { height: 100%; border-radius: 99px; transition: width 0.6s cubic-bezier(.175,.885,.32,1.275); }
+
+.btn-confirm {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    border: none; background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white; font-weight: 800; font-size: 14px; cursor: pointer;
+    margin-top: 10px; box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+/* Combustible toggles */
+.comb-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+.comb-btn {
+    flex: 1; padding: 10px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--bg2);
+    font-weight: 700; font-size: 13px; color: var(--text3); cursor: pointer;
+    transition: all 0.2s;
+}
+.comb-btn.active-glp { background: rgba(245,158,11,0.15); border-color: var(--naranja); color: var(--naranja); }
+.comb-btn.active-gas { background: rgba(234,179,8,0.15); border-color: #eab308; color: #eab308; }
+
+.comb-item {
+    background: var(--bg2); border-radius: var(--radius-sm);
+    padding: 12px 14px; margin-bottom: 8px;
+    border-left: 3px solid var(--naranja);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.comb-item-left b { font-size: 14px; font-weight: 700; color: var(--text); display: block; margin-bottom: 2px; }
+.comb-item-left small { font-size: 11px; color: var(--text3); }
+.comb-item-right { text-align: right; }
+.comb-item-right .cost { font-size: 16px; font-weight: 800; color: var(--naranja); }
+.comb-item-right .per-km { font-size: 10px; color: var(--text3); }
+
+/* Mantenimiento */
+.mant-status {
+    text-align: center; padding: 10px 0 6px;
+}
+.mant-label { font-size: 11px; color: var(--text3); font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
+.mant-value { font-size: 28px; font-weight: 800; color: var(--naranja); }
+.mant-value.ok { color: var(--verde); }
+.mant-value.danger { color: var(--rojo); }
+
+/* ===== MODALS ===== */
+.modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); align-items: flex-end;
+    justify-content: center; z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+.modal.center-modal { align-items: center; }
+.modal-sheet {
+    background: var(--surface); border-radius: 24px 24px 0 0;
+    width: 100%; max-width: 480px; padding: 20px 20px 32px;
+    max-height: 85vh; overflow-y: auto;
+}
+.modal-sheet.center { border-radius: 24px; width: 92%; max-width: 400px; }
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 16px; }
+.modal-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 16px; }
+.modal-input {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--bg2);
+    color: var(--text); font-size: 18px; text-align: center;
+    font-weight: 700; outline: none; margin-bottom: 10px;
+}
+.modal-input:focus { border-color: var(--azul); }
+.btn-modal-primary {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    border: none; background: var(--verde); color: white;
+    font-weight: 800; font-size: 15px; cursor: pointer; margin-bottom: 8px;
+}
+.btn-modal-secondary {
+    width: 100%; padding: 12px; border-radius: var(--radius-sm);
+    border: none; background: var(--bg3); color: var(--text2);
+    font-weight: 700; font-size: 14px; cursor: pointer;
+}
+.emoji-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-height: 240px; overflow-y: auto; background: var(--bg2); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 10px; }
+.emoji-option { font-size: 28px; padding: 6px; cursor: pointer; text-align: center; border-radius: 8px; transition: background 0.15s; }
+.emoji-option:active { background: var(--bg3); }
+.btn-emoji-selector {
+    width: 50px; height: 50px; border-radius: 50%;
+    border: 2px dashed var(--azul); background: var(--bg2);
+    font-size: 24px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+}
+.cat-manage-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 14px; border-radius: var(--radius-sm); margin-bottom: 6px;
+    background: var(--bg2); border: 1px solid var(--border);
+}
+.cat-manage-actions button { background: none; border: none; color: var(--text3); font-size: 16px; cursor: pointer; padding: 3px 5px; }
+.new-cat-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.new-cat-input {
+    flex: 1; padding: 11px 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--bg2);
+    color: var(--text); font-size: 14px; font-weight: 600; outline: none;
+}
+.btn-add-cat {
+    width: 44px; height: 44px; border-radius: var(--radius-sm);
+    border: none; background: var(--verde); color: white;
+    font-size: 22px; cursor: pointer; flex-shrink: 0;
+}
+
+/* Meta progress display */
+#txt-progreso-meta-modal { font-size: 28px; font-weight: 900; color: var(--text); text-align: center; margin: 12px 0; }
+
+/* Resumen semanal */
+.semana-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 14px; border-radius: var(--radius-sm); margin-bottom: 6px;
+    background: var(--bg2); border: 1px solid var(--border);
+}
+.semana-item.hoy { background: rgba(59,130,246,0.1); border-color: var(--azul); }
+.semana-item.confirmado { background: rgba(34,197,94,0.08); border-color: var(--verde); }
+.semana-dia { font-weight: 700; font-size: 14px; color: var(--text); }
+.semana-fecha-small { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.semana-km { font-weight: 800; color: var(--azul); font-size: 14px; }
+.semana-ing { font-size: 12px; color: var(--verde); font-weight: 700; }
+.semana-total-row {
+    background: rgba(59,130,246,0.1); border-radius: var(--radius-sm);
+    padding: 14px; margin-top: 8px; border: 1.5px solid var(--azul);
+}
+.semana-total-row .t-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 15px; margin-bottom: 6px; }
+
+/* Modal nav */
+.modal-nav { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 16px; }
+.modal-nav-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-nav-label { font-size: 18px; font-weight: 800; color: var(--text); }
+.mes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.mes-btn { padding: 12px 8px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--bg2); color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.15s; }
+.mes-btn:active { background: var(--azul); color: white; }
+
+/* Ciclo confirmado toast */
+#ciclo-confirmado {
+    display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--verde); color: white; padding: 10px 20px; border-radius: 99px;
+    font-weight: 700; font-size: 13px; z-index: 500; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(34,197,94,0.4);
+    animation: fadeInUp 0.3s ease;
+}
+@keyframes fadeInUp { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+/* Historial anual */
+.hist-item {
+    padding: 12px 14px; border-radius: var(--radius-sm); margin-bottom: 8px;
+    background: var(--bg2); border-left: 3px solid var(--naranja);
+    display: flex; justify-content: space-between;
+}
+.hist-item-left b { font-size: 14px; font-weight: 700; color: var(--text); display: block; }
+.hist-item-left small { font-size: 11px; color: var(--text3); }
+.hist-item-right { text-align: right; }
+.hist-item-right b { color: var(--naranja); font-size: 15px; font-weight: 800; }
+.hist-total {
+    background: rgba(59,130,246,0.1); border: 1.5px solid var(--azul);
+    border-radius: var(--radius-sm); padding: 14px; margin-top: 8px;
+}
+.hist-total .t-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; padding: 3px 0; }
+
+/* Dark/light toggle labels */
+#lbl-tema, #lbl-idioma { font-size: 11px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 360px) {
+    .balance-amount { font-size: 32px; }
+    .btn-turno { font-size: 15px; padding: 15px; }
+    .chip { padding: 7px 12px; font-size: 12px; }
+    .btn-accion { font-size: 15px; padding: 15px; }
+    .input-monto { font-size: 22px; padding: 13px 16px; }
+    .page-scroll { padding: 0 12px 16px; }
+    .top-bar { padding: 12px 12px 6px; }
+    .btn-icon { padding: 6px 9px; font-size: 11px; }
+}
+/* ===== CALCULADORA COSTOS ===== */
+#page-costos { background: var(--bg); }
+.costos-result-card {
+    margin: 0 15px 12px;
+    background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(34,197,94,0.1));
+    border-radius: var(--radius); border: 1.5px solid var(--azul);
+    padding: 20px; text-align: center;
+}
+.costos-result-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.costos-result-value { font-size: 44px; font-weight: 800; color: var(--verde); line-height: 1; }
+.costos-result-sub { font-size: 12px; color: var(--naranja); font-weight: 600; margin-top: 8px; }
+.costos-result-tarifa { font-size: 20px; font-weight: 800; color: var(--naranja); margin-top: 4px; }
+
+.costos-section { margin: 0 15px 10px; }
+.costos-section-title {
+    font-size: 12px; font-weight: 800; color: var(--naranja);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px;
+}
+.costos-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    background: var(--surface); border: 1px solid var(--border);
+    margin-bottom: 6px; gap: 10px;
+}
+.costos-row-label { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; }
+.costos-row-inputs { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.costos-input {
+    background: var(--bg2); border: 1.5px solid var(--border);
+    color: var(--text); padding: 7px 8px; border-radius: 8px;
+    width: 72px; font-size: 13px; text-align: center; font-weight: 700; outline: none;
+    transition: border-color 0.2s;
+}
+.costos-input:focus { border-color: var(--azul); }
+.costos-input-label { font-size: 10px; color: var(--text3); font-weight: 600; text-align: center; }
+.costos-desglose {
+    margin: 0 15px 10px; background: var(--surface);
+    border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden;
+}
+.costos-desglose-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.costos-desglose-item:last-child { border-bottom: none; }
+.costos-desglose-item span:first-child { color: var(--text2); font-weight: 500; }
+.costos-desglose-item span:last-child { color: var(--text); font-weight: 700; }
+.btn-calcular {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: calc(100% - 30px); margin: 0 15px 12px; padding: 16px;
+    border-radius: var(--radius); border: none;
+    background: linear-gradient(135deg, var(--azul), #2563eb);
+    color: white; font-weight: 800; font-size: 15px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
+}
+.btn-calcular:active { transform: scale(0.98); }
+/* ===== FIN CALCULADORA COSTOS ===== */
+
+@media (max-height: 420px) {
+    .balance-card { padding: 12px 16px; margin-bottom: 8px; }
+    .balance-amount { font-size: 30px; }
+    .btn-turno { padding: 12px; margin-bottom: 8px; }
+    .action-row { margin-bottom: 6px; }
+}
+</style>
 </head>
 <body onload="inicializar()">
-    <div id="splash">
-        <div class="logo-gt">GT</div>
-        <div class="m-software">MAPA SOFTWARE</div>
-        <div class="loader"></div>
+
+<!-- SPLASH -->
+<div id="splash">
+    <div class="splash-logo">GT</div>
+    <div class="splash-sub">PUREQ Pro · Mapa Software</div>
+    <div class="splash-loader"></div>
+</div>
+
+<!-- ===== PAGE TRABAJO ===== -->
+<div id="page-trabajo" class="page">
+    <!-- Meta bar -->
+    <div id="meta-bar-wrap" onclick="abrirModalMeta()">
+        <div id="progreso-meta"></div>
     </div>
 
-    <div id="page-trabajo" class="page">
-        <div id="contenedor-meta" onclick="abrirModalMeta()"><div id="progreso-meta"></div></div>
-        <div class="barra-config">
-            <button class="btn-config-small" id="btn-idioma" onclick="toggleIdioma()">🌐 <span id="lbl-idioma">EN</span></button>
-            <button class="btn-config-small" id="btn-tema" onclick="toggleTema()">🌙 <span id="lbl-tema">Dark</span></button>
-            <button class="btn-config-small" onclick="irAPerfil(true)">👤 <span data-i="perfil">Perfil</span></button>
+    <!-- Top bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">GT PUREQ</div>
+        <div class="top-bar-actions">
+            <button class="btn-icon" id="btn-idioma" onclick="toggleIdioma()">🌐 <span id="lbl-idioma">EN</span></button>
+            <button class="btn-icon" id="btn-tema" onclick="toggleTema()">🌙 <span id="lbl-tema">Dark</span></button>
+            <button class="btn-icon" onclick="irACostos(true)">📊 <span>Costos</span></button>
+            <button class="btn-icon" onclick="irAPerfil(true)">👤 <span data-i="perfil">Perfil</span></button>
         </div>
-        <div class="main-balance-container" onclick="togglePrivacidad()">
-            <span id="saldo-principal">S/. 0.00</span>
-            <span class="lbl-balance" id="lbl-status-balance">GESTOR TAXI JACK</span>
-        </div>
-        <button id="btn-gps" class="btn-gps-principal" onclick="toggleSeguimiento()"> 🚀 INICIAR TURNO</button>
-        <div class="contenedor-cats" id="cat-chips"></div>
-        
-        <div class="metodos-pago">
-            <button class="metodo-btn active" onclick="setMetodo('Efectivo', ' 💵 ', this)"> 💵 EFECTIVO</button>
-            <button class="metodo-btn" onclick="setMetodo('Yape', '🟣', this)">🟣 YAPE</button>
-            <button class="metodo-btn" onclick="setMetodo('Plin', '🔵', this)">🔵 PLIN</button>
-            <button class="metodo-btn" onclick="setMetodo('Tarjeta', ' 💳 ', this)"> 💳 TARJETA</button>
+    </div>
+
+    <!-- Scroll content -->
+    <div class="page-scroll">
+        <!-- Balance -->
+        <div class="balance-card" onclick="togglePrivacidad()">
+            <div class="balance-label" id="lbl-status-balance">BALANCE DEL DÍA</div>
+            <div class="balance-amount" id="saldo-principal">S/. 0.00</div>
+            <div class="balance-sub">Toca para ocultar · GT PUREQ Pro</div>
         </div>
 
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <!-- GPS Button -->
+        <button id="btn-gps" class="btn-turno" onclick="toggleSeguimiento()">🚀 INICIAR TURNO</button>
+
+        <!-- Categorías -->
+        <div class="chips-row" id="cat-chips"></div>
+
+        <!-- Métodos de pago -->
+        <div class="chips-row" id="metodos-chips">
+            <div class="chip" onclick="setMetodo('Efectivo','💵',this)" data-activo="true">💵 EFECTIVO</div>
+            <div class="chip" onclick="setMetodo('Yape','🟣',this)">🟣 YAPE</div>
+            <div class="chip" onclick="setMetodo('Plin','🔵',this)">🔵 PLIN</div>
+            <div class="chip" onclick="setMetodo('Tarjeta','💳',this)">💳 TARJETA</div>
+        </div>
+
+        <!-- Input monto -->
+        <div class="input-row">
             <input type="number" id="monto" class="input-monto" placeholder="S/. 0.00">
-            <button class="btn-engranaje" onclick="abrirModal()"> ⚙️ </button>
+            <button class="btn-engranaje" onclick="abrirModal()">⚙️</button>
         </div>
-        <div style="display:flex; gap:10px; margin-bottom:10px; width: 100%;">
-            <input type="text" id="km" class="input-auto-visual" placeholder="0.00 KM" readonly>
-            <input type="text" id="hrs" class="input-auto-visual" placeholder="0h 0m" readonly>
+
+        <!-- GPS info -->
+        <div class="gps-info-row">
+            <input type="text" id="km" class="gps-badge" placeholder="0.00 KM" readonly>
+            <input type="text" id="hrs" class="gps-badge" placeholder="0h 0m" readonly>
         </div>
-        <div style="display:flex; gap:10px;">
-            <button class="btn-gps-principal" style="flex:1; background:var(--verde); box-shadow:0 6px 0 #1e8449;" onclick="registrar('ingreso')"> ➕ INGRESO</button>
-            <button class="btn-gps-principal" style="flex:1; background:var(--rojo); box-shadow:0 6px 0 #c0392b;" onclick="registrar('gasto')"> ➖ GASTO</button>
+
+        <!-- Actions -->
+        <div class="action-row">
+            <button class="btn-accion btn-ingreso" onclick="registrar('ingreso')">➕ INGRESO</button>
+            <button class="btn-accion btn-gasto" onclick="registrar('gasto')">➖ GASTO</button>
         </div>
-        
-        <div class="contenedor-qr-doble">
-            <div class="wrapper-qr">
+
+        <!-- QR -->
+        <div class="qr-row">
+            <div class="qr-wrap">
                 <button class="btn-qr" style="background:var(--yape);" onclick="verQRDirecto('qr1')">🟣 QR YAPE</button>
-                <div class="btn-lapiz-qr" onclick="cambiarQR('qr1')">✏️</div>
+                <div class="btn-qr-edit" onclick="cambiarQR('qr1')">✏️</div>
             </div>
-            <div class="wrapper-qr">
+            <div class="qr-wrap">
                 <button class="btn-qr" style="background:var(--plin);" onclick="verQRDirecto('qr2')">🔵 QR PLIN</button>
-                <div class="btn-lapiz-qr" onclick="cambiarQR('qr2')">✏️</div>
+                <div class="btn-qr-edit" onclick="cambiarQR('qr2')">✏️</div>
             </div>
         </div>
-        <input type="file" id="input-qr1" accept="image/*" style="display:none;" onchange="subirQR(this, 'qr1')">
-        <input type="file" id="input-qr2" accept="image/*" style="display:none;" onchange="subirQR(this, 'qr2')">
+        <input type="file" id="input-qr1" accept="image/*" style="display:none;" onchange="subirQR(this,'qr1')">
+        <input type="file" id="input-qr2" accept="image/*" style="display:none;" onchange="subirQR(this,'qr2')">
 
-        <div style="text-align:center; margin-top:10px;"><small onclick="irAReportes(true)" style="color:var(--azul); font-weight:bold; cursor:pointer;">📂 ABRIR REPORTES</small></div>
-    </div>
-
-    <div id="modal-visor-qr" class="modal" onclick="this.style.display='none'">
-        <div class="modal-content" style="background: white; padding: 10px;">
-            <img id="img-qr-grande" src="" style="width: 100%; border-radius: 10px;">
-            <p style="color: #333; font-weight: bold; margin-top: 10px;">TOCA PARA CERRAR</p>
+        <!-- Link reportes -->
+        <div class="link-reportes" onclick="irAReportes(true)">
+            📊 <span>ABRIR REPORTES</span>
         </div>
     </div>
+</div>
 
-    <div id="page-reportes" class="page hidden">
-        <button class="btn-volver" onclick="irAReportes(false)"> ⬅ </button>
-        <div class="nav-periodos">
-            <button class="tab-btn active" onclick="cambiarPeriodo('dia', this)">Día</button>
-            <button class="tab-btn" onclick="cambiarPeriodo('semana', this)">Semana</button>
-            <button class="tab-btn" onclick="cambiarPeriodo('mes', this)">Mes</button>
-            <button class="tab-btn" onclick="cambiarPeriodo('anio', this)">Año</button>
+<!-- ===== PAGE REPORTES ===== -->
+<div id="page-reportes" class="page hidden">
+    <div class="page-header">
+        <button class="btn-back" onclick="irAReportes(false)">←</button>
+        <div class="page-title">Reportes</div>
+    </div>
+
+    <!-- Tabs periodos -->
+    <div class="period-tabs">
+        <button class="period-tab active" onclick="cambiarPeriodo('dia',this)">Día</button>
+        <button class="period-tab" onclick="cambiarPeriodo('semana',this)">Semana</button>
+        <button class="period-tab" onclick="cambiarPeriodo('mes',this)">Mes</button>
+        <button class="period-tab" onclick="cambiarPeriodo('anio',this)">Año</button>
+    </div>
+
+    <!-- Filtros pago -->
+    <div class="filter-row">
+        <div class="filter-chip active" id="f-todos" onclick="filtrarPorMetodo('Todos',this)">TODOS</div>
+        <div class="filter-chip" onclick="filtrarPorMetodo('Efectivo',this)">EFECTIVO</div>
+        <div class="filter-chip" onclick="filtrarPorMetodo('Yape',this)">YAPE</div>
+        <div class="filter-chip" onclick="filtrarPorMetodo('Plin',this)">PLIN</div>
+        <div class="filter-chip" onclick="filtrarPorMetodo('Tarjeta',this)">TARJETA</div>
+    </div>
+
+    <!-- Date picker -->
+    <div class="date-picker-wrap">
+        <input type="date" id="input-fecha-filtro" onchange="actualizarInterfaz()">
+        <div id="visor-mes" class="date-nav" onclick="abrirModalMes()">
+            <button class="date-nav-btn">◀</button>
+            <div class="date-nav-label">📅 <span id="txt-mes"></span></div>
+            <button class="date-nav-btn">▶</button>
         </div>
-        <div class="filtros-pago-reporte">
-            <button class="btn-filtro-pago active" id="f-todos" onclick="filtrarPorMetodo('Todos', this)">TODOS</button>
-            <button class="btn-filtro-pago" onclick="filtrarPorMetodo('Efectivo', this)">EFECTIVO</button>
-            <button class="btn-filtro-pago" onclick="filtrarPorMetodo('Yape', this)">YAPE</button>
-            <button class="btn-filtro-pago" onclick="filtrarPorMetodo('Plin', this)">PLIN</button>
-            <button class="btn-filtro-pago" onclick="filtrarPorMetodo('Tarjeta', this)">TARJETA</button>
+        <div id="visor-semana" class="date-nav" onclick="abrirModalSemana()">
+            <button class="date-nav-btn">◀</button>
+            <div class="date-nav-label">🗓️ <span id="txt-semana"></span></div>
+            <button class="date-nav-btn">▶</button>
         </div>
-        <div style="flex:1; overflow-y:auto; padding-top:10px;">
-            <div id="visor-fecha-general" style="text-align:center; margin-bottom:10px;">
-                <input type="date" id="input-fecha-filtro" onchange="actualizarInterfaz()" style="border:none; background:#eee; padding:10px; border-radius:10px; font-weight:bold;">
-                <div id="visor-mes" onclick="abrirModalMes()" style="display:none; cursor:pointer; font-weight:bold; padding:10px;"> 📅 <span id="txt-mes"></span></div>
-                <div id="visor-semana" onclick="abrirModalSemana()" style="display:none; cursor:pointer; font-weight:bold; padding:10px;"> 🗓️ <span id="txt-semana"></span></div>
-                <div id="visor-anio" onclick="abrirModalAnio()" style="display:none; cursor:pointer; font-weight:bold; padding:10px;"> ⭐ <span id="txt-anio"></span></div>
-            </div>
-            <div class="seccion-graficos">
-                <div class="caja-grafico">
-                    <div style="position:absolute; width:100%; text-align:center; top:40%; z-index:1"><small style="color:var(--verde)">INGRESOS</small><br><b id="txt-total-ing">0</b></div>
-                    <canvas id="cIng"></canvas>
-                </div>
-                <div class="caja-grafico">
-                    <div style="position:absolute; width:100%; text-align:center; top:40%; z-index:1"><small style="color:var(--rojo)">GASTOS</small><br><b id="txt-total-gas">0</b></div>
-                    <canvas id="cGas"></canvas>
-                </div>
-            </div>
-
-            <div id="resumen-turno-card" style="background: #f8f9fa; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #ddd;">
-                <h4 style="margin: 0 0 10px 0; color: var(--oscuro); font-size: 14px;">📊 RENDIMIENTO DEL PERIODO</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div style="background: white; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #eee;">
-                        <small style="color: #888;">S/. por KM</small><br>
-                        <b id="res-sol-km" style="color: var(--azul);">S/. 0.00</b>
-                    </div>
-                    <div style="background: white; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #eee;">
-                        <small style="color: #888;">S/. por Hora</small><br>
-                        <b id="res-sol-hr" style="color: var(--azul);">S/. 0.00</b><br>
-                        <small id="res-rango-horas" style="color: #aaa; font-size: 10px;"></small>
-                    </div>
-                </div>
-            </div>
-
-            <div id="lista" class="historial-lista"></div>
-            <button class="btn-gps-principal" style="background:#25D366; box-shadow:0 4px 0 #128C7E; margin-top:20px;" onclick="compartirWhatsApp()"> 📲 WHATSAPP</button>
+        <div id="visor-anio" class="date-nav" onclick="abrirModalAnio()">
+            <button class="date-nav-btn">◀</button>
+            <div class="date-nav-label">⭐ <span id="txt-anio"></span></div>
+            <button class="date-nav-btn">▶</button>
         </div>
     </div>
 
-    <!-- ===== PÁGINA PERFIL CON NUEVAS SECCIONES ===== -->
-    <div id="page-perfil" class="page hidden">
-        <button class="btn-volver" onclick="irAPerfil(false)"> ⬅ </button>
-        <div class="card-perfil">
-            <div class="foto-perfil-circulo" onclick="document.getElementById('input-foto').click()">
+    <div style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;">
+        <!-- Gráficos -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-label"><small style="color:var(--verde)">INGRESOS</small><b id="txt-total-ing">0</b></div>
+                <canvas id="cIng"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-label"><small style="color:var(--rojo)">GASTOS</small><b id="txt-total-gas">0</b></div>
+                <canvas id="cGas"></canvas>
+            </div>
+        </div>
+
+        <!-- Rendimiento -->
+        <div class="rendimiento-card">
+            <div class="rendimiento-title">📊 RENDIMIENTO DEL PERIODO</div>
+            <div class="rendimiento-grid">
+                <div class="rendimiento-item">
+                    <small>S/. por KM</small>
+                    <b id="res-sol-km">S/. 0.00</b>
+                </div>
+                <div class="rendimiento-item">
+                    <small>S/. por Hora</small>
+                    <b id="res-sol-hr">S/. 0.00</b>
+                    <div id="res-rango-horas" style="font-size:10px; color:var(--text3); margin-top:3px; font-weight:500;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista movimientos -->
+        <div class="mov-list" id="lista"></div>
+
+        <!-- WhatsApp -->
+        <button class="btn-wa" onclick="compartirWhatsApp()">📲 Compartir por WhatsApp</button>
+    </div>
+</div>
+
+<!-- ===== PAGE PERFIL ===== -->
+<div id="page-perfil" class="page hidden">
+    <div class="page-header">
+        <button class="btn-back" onclick="irAPerfil(false)">←</button>
+        <div class="page-title">Perfil</div>
+    </div>
+
+    <div style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:24px;">
+        <!-- Hero perfil -->
+        <div class="perfil-hero">
+            <div class="foto-wrap" onclick="document.getElementById('input-foto').click()">
                 <img id="img-perfil" src="" style="display:none;">
-                <span id="icono-perfil" style="font-size:50px;"> 👤 </span>
+                <span id="icono-perfil" style="font-size:40px;">👤</span>
             </div>
             <input type="file" id="input-foto" accept="image/*" style="display:none;" onchange="subirFoto(this)">
-            <h2 id="perf-usuario">TAXI JACK</h2>
-            <button class="edit-nombre-btn" onclick="editarNombre()"> ✏️ EDITAR NOMBRE</button>
-            <!-- CONTADOR DE SERVICIOS DESDE ÚLTIMA RECARGA -->
-            <div onclick="abrirHistorialServicios()" style="margin-top:15px; background:rgba(255,255,255,0.08); border-radius:16px; padding:14px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); text-align:center;">
-                <small style="color:rgba(255,255,255,0.5); font-size:11px; letter-spacing:1px;">SERVICIOS DESDE ÚLTIMA RECARGA</small>
-                <div style="font-size:36px; font-weight:900; color:white;" id="contador-servicios-recarga">0</div>
-                <small style="color:rgba(255,255,255,0.4); font-size:10px;">Toca para ver historial anual</small>
-            </div>
+            <div class="perfil-nombre" id="perf-usuario">TAXI JACK</div>
+            <button class="btn-edit-nombre" onclick="editarNombre()">✏️ EDITAR NOMBRE</button>
         </div>
 
-        <!-- PANEL COMBUSTIBLE -->
-        <div class="card-vehiculo" style="margin-top:15px;">
-            <h4>⛽ COMBUSTIBLE</h4>
-            <div style="display:flex; gap:8px; margin-bottom:12px;">
-                <button onclick="setCombustible('GLP')" id="btn-glp" style="flex:1; padding:10px; border-radius:12px; border:2px solid var(--naranja); background:var(--naranja); color:white; font-weight:900; font-size:13px;">🔵 GLP</button>
-                <button onclick="setCombustible('Gasolina')" id="btn-gasolina" style="flex:1; padding:10px; border-radius:12px; border:2px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); font-weight:900; font-size:13px;">🟡 GASOLINA</button>
+        <!-- Contador servicios -->
+        <div class="servicios-counter" onclick="abrirHistorialServicios()">
+            <div class="servicios-counter-left">
+                <small>SERVICIOS DESDE ÚLTIMA RECARGA</small>
+                <div class="num" id="contador-servicios-recarga">0</div>
+                <div style="font-size:10px; color:var(--text3); margin-top:2px;">Toca para ver historial anual</div>
             </div>
-            <div class="km-grid">
-                <div class="km-box">
-                    <small>KM AL CARGAR</small>
-                    <input type="number" id="comb-km-carga" placeholder="0" oninput="calcularDuracionCombustible()">
+            <div class="servicios-counter-right">🔧</div>
+        </div>
+
+        <!-- COMBUSTIBLE -->
+        <div class="card-section">
+            <div class="card-section-header">
+                <span>⛽</span>
+                <h4>COMBUSTIBLE</h4>
+            </div>
+            <div class="card-section-body">
+                <div class="comb-toggle">
+                    <button onclick="setCombustible('GLP')" id="btn-glp" class="comb-btn active-glp">🔵 GLP</button>
+                    <button onclick="setCombustible('Gasolina')" id="btn-gasolina" class="comb-btn">🟡 GASOLINA</button>
                 </div>
-                <div class="km-box">
-                    <small>KM AL CULMINAR</small>
-                    <input type="number" id="comb-km-fin" placeholder="0" oninput="calcularDuracionCombustible()">
+                <div class="km-grid">
+                    <div class="km-box">
+                        <small>KM AL CARGAR</small>
+                        <input type="number" id="comb-km-carga" placeholder="0" oninput="calcularDuracionCombustible()">
+                    </div>
+                    <div class="km-box">
+                        <small>KM AL CULMINAR</small>
+                        <input type="number" id="comb-km-fin" placeholder="0" oninput="calcularDuracionCombustible()">
+                    </div>
                 </div>
-            </div>
-            <div class="total-recorrido" style="display:flex; align-items:center; justify-content:center; gap:8px; margin:8px 0;">
-                Duración: <span id="comb-duracion" style="color:var(--naranja); font-weight:900;">0 KM</span>
-            </div>
-            <div class="km-grid" style="margin-top:4px;">
-                <div class="km-box">
-                    <small>COSTO GLP S/.</small>
-                    <input type="number" id="comb-costo-glp" placeholder="0.00" step="0.10" oninput="calcularCostoTotal()">
+                <div class="total-row">Duración: <span id="comb-duracion">0 KM</span></div>
+                <div class="km-grid">
+                    <div class="km-box">
+                        <small>COSTO GLP S/.</small>
+                        <input type="number" id="comb-costo-glp" placeholder="0.00" step="0.10" oninput="calcularCostoTotal()">
+                    </div>
+                    <div class="km-box">
+                        <small>COSTO GASOLINA S/.</small>
+                        <input type="number" id="comb-costo-gas" placeholder="0.00" step="0.10" oninput="calcularCostoTotal()">
+                    </div>
                 </div>
-                <div class="km-box">
-                    <small>COSTO GASOLINA S/.</small>
-                    <input type="number" id="comb-costo-gas" placeholder="0.00" step="0.10" oninput="calcularCostoTotal()">
+                <div class="total-row">Costo total: <span id="comb-costo-total">S/. 0.00</span></div>
+                <button onclick="registrarCombustible()" class="btn-confirm">✅ REGISTRAR RECARGA</button>
+                <div style="margin-top:14px;">
+                    <div style="font-size:11px; font-weight:700; color:var(--text3); letter-spacing:1px; margin-bottom:8px;">ÚLTIMAS RECARGAS</div>
+                    <div id="lista-combustible"></div>
                 </div>
-            </div>
-            <div class="total-recorrido" style="display:flex; align-items:center; justify-content:center; gap:8px; margin:6px 0;">
-                Costo total: <span id="comb-costo-total" style="color:var(--verde); font-weight:900;">S/. 0.00</span>
-            </div>
-            <button onclick="registrarCombustible()" style="width:100%; padding:14px; border:none; border-radius:12px; background:var(--verde); color:white; font-weight:900; font-size:14px; box-shadow:0 4px 0 #1e8449; margin-top:4px;">✅ REGISTRAR RECARGA</button>
-            <!-- Últimos 5 registros -->
-            <div style="margin-top:14px;">
-                <small style="color:rgba(255,255,255,0.5); font-size:11px; letter-spacing:1px;">ÚLTIMAS RECARGAS</small>
-                <div id="lista-combustible" style="margin-top:8px;"></div>
             </div>
         </div>
 
         <!-- CONTROL DE VEHÍCULO -->
-        <div class="card-vehiculo">
-            <h4>🚗 CONTROL DE VEHÍCULO</h4>
-            <p style="font-size:12px; color:rgba(255,255,255,0.5); margin:-8px 0 12px; text-align:left;">📊 Recorrido del Turno</p>
-            <div class="km-grid">
-                <div class="km-box">
-                    <small>KM INICIO</small>
-                    <input type="number" id="km-inicio" placeholder="0.00" oninput="calcularRecorrido()" 
-                           value="">
-                </div>
-                <div class="km-box">
-                    <small>KM FINAL (Actual)</small>
-                    <input type="number" id="km-final" placeholder="0.00" oninput="calcularRecorrido()"
-                           value="">
-                </div>
+        <div class="card-section">
+            <div class="card-section-header">
+                <span>🚗</span>
+                <h4>CONTROL DE VEHÍCULO</h4>
             </div>
-            <div class="total-recorrido" style="display:flex; align-items:center; justify-content:center; gap:10px;">
-                Total Recorrido: <span id="total-recorrido">0.00 KM</span>
-                <span onclick="abrirResumenSemanal()" style="font-size:20px; cursor:pointer;" title="Resumen semanal">📄</span>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:12px;">
-                <button onclick="confirmarCiclo()" style="flex:1; padding:12px; border:none; border-radius:14px; background:var(--verde); color:white; font-weight:900; font-size:15px; box-shadow:0 4px 0 #1e8449;">✅ CONFIRMAR KM FINAL</button>
-            </div>
-            <div id="ciclo-confirmado" style="display:none; text-align:center; margin-top:8px; font-size:12px; color:#2ecc71; font-weight:bold;">✔ Ciclo del día confirmado</div>
-
-            <div class="separador-card"></div>
-
-            <!-- PLAN DE MANTENIMIENTO -->
-            <p style="font-size:14px; font-weight:800; color:rgba(255,255,255,0.85); margin:0 0 12px; text-align:left;">🔧 Plan de Mantenimiento</p>
-            <div class="mant-grid">
-                <div class="mant-box">
-                    <small>KM ACTUAL (Tablero)</small>
-                    <input type="number" id="km-tablero" placeholder="0" oninput="vehiculoData.kmTableroBase = this.value; calcularMantenimiento(); guardarVehiculo()">
+            <div class="card-section-body">
+                <div class="card-section-sub">Recorrido del Turno</div>
+                <div class="km-grid">
+                    <div class="km-box">
+                        <small>KM INICIO</small>
+                        <input type="number" id="km-inicio" placeholder="0" oninput="calcularRecorrido()">
+                    </div>
+                    <div class="km-box">
+                        <small>KM FINAL (Actual)</small>
+                        <input type="number" id="km-final" placeholder="0" oninput="calcularRecorrido()">
+                    </div>
                 </div>
-                <div class="mant-box proximo">
-                    <small>PRÓX. MANTENIM.</small>
-                    <input type="number" id="km-proximo-mant" placeholder="0" oninput="calcularMantenimiento(); guardarVehiculo()">
+                <div class="total-row">
+                    Total Recorrido: <span id="total-recorrido">0.00 KM</span>
+                    <span onclick="abrirResumenSemanal()" style="font-size:18px; cursor:pointer; margin-left:6px;">📄</span>
                 </div>
-            </div>
-            <div class="faltan-label">FALTAN PARA EL SERVICIO:</div>
-            <div class="faltan-valor" id="faltan-km-valor">-- KM</div>
-            <div class="barra-mant-wrap">
-                <div class="barra-mant-fill" id="barra-mant" style="width:0%;"></div>
+                <button onclick="confirmarCiclo()" class="btn-confirm">✅ CONFIRMAR KM FINAL</button>
+                <div id="ciclo-confirmado">✅ Ciclo confirmado</div>
             </div>
         </div>
 
-        <div style="height: 30px;"></div>
-    </div>
-    <!-- ===== FIN PERFIL ===== -->
-
-    <div id="modal-meta" class="modal"><div class="modal-content" style="background: white; color: #333; border-top: 5px solid var(--verde);"><h3>Mi Meta Diaria</h3><div id="txt-progreso-meta-modal" style="font-size: 24px; font-weight: 900; margin: 15px 0; color:var(--oscuro);">S/. 0 / S/. 0</div><input type="number" id="input-meta-valor" placeholder="Ej: 150" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #ddd; text-align: center; font-size: 20px; outline: none; margin-bottom:10px;"><button onclick="guardarMeta()" style="width:100%; padding:15px; border:none; border-radius:12px; background:var(--verde); font-weight:bold; color:white;">GUARDAR META</button><button onclick="cerrarModalesYModos()" style="width:100%; margin-top:10px; background:none; border:none; color:#999;">Cerrar</button></div></div>
-    <div id="modal" class="modal"><div class="modal-content"><h3>Categorías</h3><div id="lista-gestion" style="max-height:180px; overflow-y:auto; margin-bottom:15px; background:rgba(255,255,255,0.1); border-radius:10px;"></div><div style="display:flex; align-items:center; gap:10px; background:rgba(0,0,0,0.1); padding:10px; border-radius:15px;"><div id="btn-emoji-actual" class="btn-emoji-selector" onclick="abrirVariedad()"> 🚕 </div><input type="text" id="n-nom" placeholder="Nombre" style="flex:1; padding:12px; border-radius:10px; border:none; outline:none;"><button onclick="crearCat()" style="background:var(--verde); color:white; border:none; width:50px; height:50px; border-radius:10px; font-size:24px;">+</button></div><button onclick="cerrarModal()" style="width:100%; margin-top:15px; padding:12px; border:none; border-radius:10px; background:white; font-weight:bold; color:var(--azul);">CERRAR</button></div></div>
-    <div id="modal-emojis" class="modal"><div class="modal-content" style="background: white; color: #333;"><h3 style="color: var(--azul);">Selecciona un Emoji</h3><div class="emoji-grid-container" id="grid-variedad"></div><button onclick="cerrarVariedad()" style="width:100%; margin-top:15px; padding:12px; border:none; border-radius:10px; background:var(--azul); font-weight:bold; color:white;">VOLVER</button></div></div>
-    <div id="modal-mes" class="modal"><div class="modal-content"><h3>Mes</h3><div id="grid-meses" style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px;"></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">Cerrar</button></div></div>
-    <div id="modal-semana" class="modal"><div class="modal-content"><h3>Semanas</h3><div style="display:flex; justify-content:center; gap:10px; align-items:center;"><button onclick="navegarSemana(-7)"> ◀ </button><span id="rango-semana-modal"></span><button onclick="navegarSemana(7)"> ▶ </button></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">OK</button></div></div>
-    <!-- MODAL HISTORIAL SERVICIOS ANUAL -->
-    <div id="modal-historial-servicios" class="modal">
-        <div class="modal-content" style="background:white; color:#333; max-height:85vh; overflow-y:auto; padding:20px;">
-            <h3 style="color:var(--oscuro); margin-bottom:5px;">🔧 Historial de Recargas</h3>
-            <p style="font-size:12px; color:#888; margin-bottom:12px;" id="txt-anio-historial"></p>
-            <div id="tabla-historial-servicios"></div>
-            <button onclick="cerrarModalesYModos()" style="width:100%; margin-top:12px; padding:12px; border:none; border-radius:12px; background:#eee; color:#666; font-weight:bold;">Cerrar</button>
-        </div>
-    </div>
-
-    <div id="modal-anio" class="modal"><div class="modal-content"><h3>Año</h3><div style="display:flex; justify-content:center; gap:10px; align-items:center;"><button onclick="navegarAnio(-1)"> ◀ </button><span id="txt-anio-modal" style="font-size:24px; font-weight:bold;"></span><button onclick="navegarAnio(1)"> ▶ </button></div><button onclick="cerrarModalesYModos()" style="margin-top:15px; width:100%; padding:10px;">OK</button></div></div>
-
-    <!-- MODAL RESUMEN SEMANAL -->
-    <div id="modal-resumen-semanal" class="modal">
-        <div class="modal-content" style="background:white; color:#333; max-height:85vh; overflow-y:auto; padding:20px;">
-            <h3 style="color:var(--oscuro); margin-bottom:2px;">📄 Resumen Semanal</h3>
-            <p id="txt-rango-semana-resumen" style="font-size:12px; color:#888; margin-bottom:12px;"></p>
-            <div id="tabla-resumen-semanal"></div>
-            <div style="background:#f8f9fa; border-radius:12px; padding:14px; margin-top:10px; border:2px solid var(--azul);">
-                <div style="display:flex; justify-content:space-between; font-weight:900; font-size:15px;">
-                    <span>🛣️ TOTAL KM</span>
-                    <span id="total-km-semana" style="color:var(--azul);">0.0 KM</span>
+        <!-- PLAN MANTENIMIENTO -->
+        <div class="card-section">
+            <div class="card-section-header">
+                <span>🔧</span>
+                <h4>PLAN DE MANTENIMIENTO</h4>
+            </div>
+            <div class="card-section-body">
+                <div class="km-grid">
+                    <div class="km-box">
+                        <small>KM ACTUAL (Tablero)</small>
+                        <input type="number" id="km-tablero" placeholder="0" oninput="vehiculoData.kmTableroBase=this.value; calcularMantenimiento(); guardarVehiculo()">
+                    </div>
+                    <div class="km-box">
+                        <small>PRÓX. MANTENIM.</small>
+                        <input type="number" id="km-proximo-mant" placeholder="0" oninput="calcularMantenimiento(); guardarVehiculo()">
+                    </div>
                 </div>
-                <div style="display:flex; justify-content:space-between; font-weight:900; font-size:15px; margin-top:8px;">
-                    <span>💰 INGRESOS</span>
-                    <span id="total-ing-semana" style="color:var(--verde);">S/. 0.00</span>
+                <div class="mant-status">
+                    <div class="mant-label">FALTAN PARA EL SERVICIO</div>
+                    <div class="mant-value" id="faltan-km-valor">-- KM</div>
+                </div>
+                <div class="barra-wrap">
+                    <div class="barra-fill" id="barra-mant" style="width:0%; background:var(--verde);"></div>
                 </div>
             </div>
-            <button onclick="compartirResumenWhatsApp()" style="width:100%; margin-top:12px; padding:14px; border:none; border-radius:12px; background:#25D366; color:white; font-weight:bold; font-size:15px;">📲 Compartir por WhatsApp</button>
-            <button onclick="cerrarModalesYModos()" style="width:100%; margin-top:8px; padding:12px; border:none; border-radius:12px; background:#eee; color:#666; font-weight:bold;">Cerrar</button>
         </div>
     </div>
+</div>
 
-    <script>
+<!-- ===== PAGE COSTOS ===== -->
+<div id="page-costos" class="page hidden">
+    <div class="page-header">
+        <button class="btn-back" onclick="irACostos(false)">←</button>
+        <div class="page-title">💰 Costo Real por KM</div>
+    </div>
+
+    <div style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:24px;">
+
+        <!-- RESULTADO PRINCIPAL -->
+        <div class="costos-result-card">
+            <div class="costos-result-label">Tu costo real por kilómetro</div>
+            <div class="costos-result-value">S/. <span id="costo-km-display">0.000</span></div>
+            <div class="costos-result-sub">Tarifa mínima sugerida (×2.2):</div>
+            <div class="costos-result-tarifa">S/. <span id="tarifa-min-display">0.00</span> / KM</div>
+        </div>
+
+        <!-- BOTÓN CALCULAR -->
+        <button class="btn-calcular" onclick="calcularCostoMaestro()">⚡ CALCULAR MI COSTO REAL</button>
+
+        <!-- DESGLOSE -->
+        <div class="costos-desglose" id="costos-desglose" style="display:none;">
+            <div class="costos-desglose-item"><span>🚗 Depreciación auto</span><span id="d-auto">S/. 0.000</span></div>
+            <div class="costos-desglose-item"><span>⛽ Combustible</span><span id="d-comb">S/. 0.000</span></div>
+            <div class="costos-desglose-item"><span>🔧 Mantenimientos</span><span id="d-mant">S/. 0.000</span></div>
+            <div class="costos-desglose-item"><span>📄 Gastos anuales</span><span id="d-anual">S/. 0.000</span></div>
+        </div>
+
+        <!-- SECCIÓN: VEHÍCULO -->
+        <div class="costos-section">
+            <div class="costos-section-title">🚗 Vehículo y Combustible</div>
+            <div class="costos-row">
+                <div class="costos-row-label">Inversión / Valor del auto</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/.</div><input type="number" id="v_auto" class="costos-input" value="53500"></div>
+                    <div><div class="costos-input-label">KM vida</div><input type="number" id="k_auto" class="costos-input" value="300000"></div>
+                </div>
+            </div>
+            <div class="costos-row">
+                <div class="costos-row-label">Combustible (lleno)</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/.</div><input type="number" id="v_comb" class="costos-input" value="90"></div>
+                    <div><div class="costos-input-label">KM rinde</div><input type="number" id="k_comb" class="costos-input" value="230"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: MANTENIMIENTO -->
+        <div class="costos-section">
+            <div class="costos-section-title">🔧 Mantenimiento Preventivo</div>
+            <div class="costos-row">
+                <div class="costos-row-label">Aceite y Filtros</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/.</div><input type="number" id="v_aceite" class="costos-input" value="230"></div>
+                    <div><div class="costos-input-label">Cada KM</div><input type="number" id="k_aceite" class="costos-input" value="7000"></div>
+                </div>
+            </div>
+            <div class="costos-row">
+                <div class="costos-row-label">Llantas (juego de 4)</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/.</div><input type="number" id="v_llantas" class="costos-input" value="1000"></div>
+                    <div><div class="costos-input-label">Cada KM</div><input type="number" id="k_llantas" class="costos-input" value="70000"></div>
+                </div>
+            </div>
+            <div class="costos-row">
+                <div class="costos-row-label">Frenos (Del + Post)</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/.</div><input type="number" id="v_frenos" class="costos-input" value="250"></div>
+                    <div><div class="costos-input-label">Cada KM</div><input type="number" id="k_frenos" class="costos-input" value="20000"></div>
+                </div>
+            </div>
+            <div class="costos-row">
+                <div class="costos-row-label">Suspensión / Amortiguadores</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/.</div><input type="number" id="v_susp" class="costos-input" value="400"></div>
+                    <div><div class="costos-input-label">Cada KM</div><input type="number" id="k_susp" class="costos-input" value="60000"></div>
+                </div>
+            </div>
+            <div class="costos-row">
+                <div class="costos-row-label">Kit Distribución</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/.</div><input type="number" id="v_dist" class="costos-input" value="80"></div>
+                    <div><div class="costos-input-label">Cada KM</div><input type="number" id="k_dist" class="costos-input" value="80000"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: GASTOS ANUALES -->
+        <div class="costos-section">
+            <div class="costos-section-title">📄 Gastos Anuales</div>
+            <div class="costos-row">
+                <div class="costos-row-label">SOAT</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/. / año</div><input type="number" id="v_soat" class="costos-input" value="70"></div>
+                </div>
+            </div>
+            <div class="costos-row">
+                <div class="costos-row-label">Revisión Técnica</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/. / año</div><input type="number" id="v_rev" class="costos-input" value="70"></div>
+                </div>
+            </div>
+            <div class="costos-row">
+                <div class="costos-row-label">Fondo Imprevistos</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">S/. / año</div><input type="number" id="v_imp" class="costos-input" value="500"></div>
+                </div>
+            </div>
+            <div class="costos-row">
+                <div class="costos-row-label">KM recorridos al año</div>
+                <div class="costos-row-inputs">
+                    <div><div class="costos-input-label">KM / año</div><input type="number" id="k_anuales" class="costos-input" value="40000"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTÓN CALCULAR (abajo también) -->
+        <button class="btn-calcular" onclick="calcularCostoMaestro()">⚡ CALCULAR MI COSTO REAL</button>
+
+    </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- QR Visor -->
+<div id="modal-visor-qr" class="modal center-modal" onclick="this.style.display='none'">
+    <div class="modal-sheet center" style="text-align:center;">
+        <img id="img-qr-grande" src="" style="width:100%; border-radius:12px;">
+        <p style="color:var(--text3); font-size:13px; margin-top:10px; font-weight:600;">Toca para cerrar</p>
+    </div>
+</div>
+
+<!-- Meta -->
+<div id="modal-meta" class="modal center-modal">
+    <div class="modal-sheet center">
+        <div class="modal-handle"></div>
+        <div class="modal-title">🎯 Meta Diaria</div>
+        <div id="txt-progreso-meta-modal">S/. 0 / S/. 0</div>
+        <input type="number" id="input-meta-valor" class="modal-input" placeholder="Ej: 150" style="margin-top:12px;">
+        <button onclick="guardarMeta()" class="btn-modal-primary">GUARDAR META</button>
+        <button onclick="cerrarModalesYModos()" class="btn-modal-secondary">Cerrar</button>
+    </div>
+</div>
+
+<!-- Categorías -->
+<div id="modal" class="modal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Categorías</div>
+        <div id="lista-gestion" style="max-height:200px; overflow-y:auto;"></div>
+        <div class="new-cat-row">
+            <div id="btn-emoji-actual" class="btn-emoji-selector" onclick="abrirVariedad()">🚕</div>
+            <input type="text" id="n-nom" class="new-cat-input" placeholder="Nombre de categoría">
+            <button onclick="crearCat()" class="btn-add-cat">+</button>
+        </div>
+        <button onclick="cerrarModal()" class="btn-modal-secondary" style="margin-top:10px;">Cerrar</button>
+    </div>
+</div>
+
+<!-- Emojis -->
+<div id="modal-emojis" class="modal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Selecciona un emoji</div>
+        <div class="emoji-grid" id="grid-variedad"></div>
+        <button onclick="cerrarVariedad()" class="btn-modal-secondary">Volver</button>
+    </div>
+</div>
+
+<!-- Mes -->
+<div id="modal-mes" class="modal center-modal">
+    <div class="modal-sheet center">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Seleccionar mes</div>
+        <div class="mes-grid" id="grid-meses"></div>
+        <button onclick="cerrarModalesYModos()" class="btn-modal-secondary" style="margin-top:12px;">Cerrar</button>
+    </div>
+</div>
+
+<!-- Semana -->
+<div id="modal-semana" class="modal center-modal">
+    <div class="modal-sheet center">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Semana</div>
+        <div class="modal-nav">
+            <button class="modal-nav-btn" onclick="navegarSemana(-7)">◀</button>
+            <div class="modal-nav-label" id="rango-semana-modal"></div>
+            <button class="modal-nav-btn" onclick="navegarSemana(7)">▶</button>
+        </div>
+        <button onclick="cerrarModalesYModos()" class="btn-modal-primary">OK</button>
+    </div>
+</div>
+
+<!-- Año -->
+<div id="modal-anio" class="modal center-modal">
+    <div class="modal-sheet center">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Año</div>
+        <div class="modal-nav">
+            <button class="modal-nav-btn" onclick="navegarAnio(-1)">◀</button>
+            <div class="modal-nav-label" id="txt-anio-modal"></div>
+            <button class="modal-nav-btn" onclick="navegarAnio(1)">▶</button>
+        </div>
+        <button onclick="cerrarModalesYModos()" class="btn-modal-primary">OK</button>
+    </div>
+</div>
+
+<!-- Resumen semanal -->
+<div id="modal-resumen-semanal" class="modal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title">📄 Resumen Semanal</div>
+        <p id="txt-rango-semana-resumen" style="font-size:12px; color:var(--text3); margin-bottom:12px;"></p>
+        <div id="tabla-resumen-semanal"></div>
+        <div class="semana-total-row" style="margin-top:10px;">
+            <div class="t-row"><span>🛣️ TOTAL KM</span><span id="total-km-semana" style="color:var(--azul);">0.0 KM</span></div>
+            <div class="t-row"><span>💰 INGRESOS</span><span id="total-ing-semana" style="color:var(--verde);">S/. 0.00</span></div>
+        </div>
+        <button onclick="compartirResumenWhatsApp()" class="btn-wa" style="margin:12px 0 0;">📲 Compartir por WhatsApp</button>
+        <button onclick="cerrarModalesYModos()" class="btn-modal-secondary">Cerrar</button>
+    </div>
+</div>
+
+<!-- Historial servicios -->
+<div id="modal-historial-servicios" class="modal">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title">🔧 Historial de Recargas</div>
+        <p id="txt-anio-historial" style="font-size:12px; color:var(--text3); margin-bottom:12px;"></p>
+        <div id="tabla-historial-servicios"></div>
+        <button onclick="cerrarModalesYModos()" class="btn-modal-secondary" style="margin-top:10px;">Cerrar</button>
+    </div>
+</div>
+
+<script>
         Chart.register(ChartDataLabels);
         let movs = JSON.parse(localStorage.getItem('movs_v15')) || [];
         let cats = JSON.parse(localStorage.getItem('cats_v15')) || [{id: 0, n: "Carrera", i: " 🚕 "}, {id: 1, n: "Gasolina", i: " ⛽ "}, {id: 2, n: "Comida", i: " 🍔 "}];
@@ -627,6 +1153,81 @@
         
         const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const listaEmojis = ["💰","💵","💸","💳","🪙","💹","📈","📉","🏦","🏧","💎","⚖️","🧾","🛍️","🛒","🏷️","🎁","💼","📁","📂","📊","📋","📌","📍","🔍","⚙️","🛠️","🔧","⚒️","🔨","🪛","🧰","🏠","🏢","🏭","🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚐","🚚","🚛","🚜","🛵","🚲","⛽","🚨","🚥","🚦","🚧","👨‍✈️","👷","👨‍🔧","👮","🍔","🍟","🍕","🥪","🌮","☕","🥤","🍺","🍷","🍫","🦊","🐶","🐱","🐹","✨","⭐","🌟","⚡","❄️","🔥","💧","✅","❌","⚠️"];
+
+        // ===== CALCULADORA COSTOS =====
+        let costosDatos = JSON.parse(localStorage.getItem('gt_costos_v1')) || {};
+
+        function irACostos(mostrar) {
+            const p = document.getElementById('page-costos');
+            if (mostrar) {
+                pushEstado();
+                cargarDatosCostos();
+                calcularCostoMaestro();
+                p.classList.remove('hidden');
+            } else {
+                p.classList.add('hidden');
+            }
+        }
+
+        function cargarDatosCostos() {
+            const campos = ['v_auto','k_auto','v_comb','k_comb','v_aceite','k_aceite',
+                           'v_llantas','k_llantas','v_frenos','k_frenos','v_susp','k_susp',
+                           'v_dist','k_dist','v_soat','v_rev','v_imp','k_anuales'];
+            campos.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && costosDatos[id]) el.value = costosDatos[id];
+            });
+        }
+
+        function guardarDatosCostos() {
+            const campos = ['v_auto','k_auto','v_comb','k_comb','v_aceite','k_aceite',
+                           'v_llantas','k_llantas','v_frenos','k_frenos','v_susp','k_susp',
+                           'v_dist','k_dist','v_soat','v_rev','v_imp','k_anuales'];
+            campos.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) costosDatos[id] = el.value;
+            });
+            localStorage.setItem('gt_costos_v1', JSON.stringify(costosDatos));
+        }
+
+        function calcularCostoMaestro() {
+            const g = id => parseFloat(document.getElementById(id)?.value) || 0;
+            const KM_ANUALES = g('k_anuales') || 40000;
+
+            const dAuto  = g('v_auto')   / g('k_auto');
+            const dComb  = g('v_comb')   / g('k_comb');
+            const dAceit = g('v_aceite') / g('k_aceite');
+            const dLlant = g('v_llantas')/ g('k_llantas');
+            const dFren  = g('v_frenos') / g('k_frenos');
+            const dSusp  = g('v_susp')   / g('k_susp');
+            const dDist  = g('v_dist')   / g('k_dist');
+            const dAnual = (g('v_soat') + g('v_rev') + g('v_imp')) / KM_ANUALES;
+
+            const dMant = dAceit + dLlant + dFren + dSusp + dDist;
+            const total = dAuto + dComb + dMant + dAnual;
+            const tarifa = total * 2.2;
+
+            // Mostrar resultado
+            const el = document.getElementById('costo-km-display');
+            const elT = document.getElementById('tarifa-min-display');
+            if (el) el.innerText = total.toFixed(3);
+            if (elT) elT.innerText = tarifa.toFixed(2);
+
+            // Mostrar desglose
+            const des = document.getElementById('costos-desglose');
+            if (des) {
+                des.style.display = 'block';
+                document.getElementById('d-auto').innerText  = 'S/. ' + dAuto.toFixed(3);
+                document.getElementById('d-comb').innerText  = 'S/. ' + dComb.toFixed(3);
+                document.getElementById('d-mant').innerText  = 'S/. ' + dMant.toFixed(3);
+                document.getElementById('d-anual').innerText = 'S/. ' + dAnual.toFixed(3);
+            }
+
+            // Guardar para uso global
+            localStorage.setItem('GT_COSTO_REAL_KM', total.toFixed(3));
+            guardarDatosCostos();
+        }
+        // ===== FIN CALCULADORA COSTOS =====
 
         // ===== IDIOMA Y TEMA =====
         let idiomaActual = localStorage.getItem('gt_idioma') || 'es';
@@ -707,23 +1308,26 @@
         function aplicarTema() {
             const t = traducciones[idiomaActual];
             if (temaOscuro) {
-                document.body.classList.add('dark-mode');
+                document.body.classList.remove('light');
                 document.getElementById('lbl-tema').innerText = t.light;
                 document.getElementById('btn-tema').classList.add('active-dark');
             } else {
-                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light');
                 document.getElementById('lbl-tema').innerText = t.dark;
                 document.getElementById('btn-tema').classList.remove('active-dark');
             }
         }
         // ===== FIN IDIOMA Y TEMA =====
 
-        window.onpopstate = function() { cerrarModalesYModos(); document.getElementById('page-reportes').classList.add('hidden'); document.getElementById('page-perfil').classList.add('hidden'); };
+        window.onpopstate = function() { cerrarModalesYModos(); document.getElementById('page-reportes').classList.add('hidden'); document.getElementById('page-perfil').classList.add('hidden'); document.getElementById('page-costos').classList.add('hidden'); };
         function pushEstado() { history.pushState({view: 'subpage'}, ""); }
 
         function inicializar() {
             document.getElementById('input-fecha-filtro').value = new Date().toLocaleDateString('en-CA');
             cargarDatosPerfil(); dibujarCats(); initCharts(); actualizarInterfaz();
+            // Init first metodo chip active
+            const primerChip = document.querySelector('#metodos-chips .chip');
+            if (primerChip) primerChip.classList.add('metodo-active');
             const grid = document.getElementById('grid-variedad');
             grid.innerHTML = listaEmojis.map(e => `<span class="emoji-option" onclick="seleccionarEmoji('${e}')">${e}</span>`).join('');
             cargarDatosVehiculo();
@@ -879,10 +1483,19 @@
                     filteredList.push(m);
                     const esI = m.tipo === 'ingreso';
                     if (esI) dIng[m.catN] = (dIng[m.catN] || 0) + m.mon; else dGas[m.catN] = (dGas[m.catN] || 0) + m.mon;
-                    listaUI.innerHTML += `<div class="item-mov" style="border-left-color:${esI?'var(--verde)':'var(--rojo)'}">
-                    <div><b>${m.catI} ${m.catN}</b><br><small>${m.hora} | ${m.metodoN}</small><br><small style="color:var(--azul)"> 📍 ${m.km} | ⏱️ ${m.hrs}</small></div>
-                    <div style="text-align:right"><b style="color:${esI?'var(--verde)':'var(--rojo)'}">S/.${m.mon.toFixed(2)}</b><br>
-                    <span onclick="editarMovimiento(${idx})"> ✏️ </span> <span onclick="eliminarMovimiento(${idx})" style="margin-left:10px"> 🗑️ </span></div></div>`;
+                    listaUI.innerHTML += `<div class="mov-item" style="border-left-color:${esI?'var(--verde)':'var(--rojo)'}">
+                    <div class="mov-item-left">
+                        <div class="mov-item-title">${m.catI} ${m.catN}</div>
+                        <div class="mov-item-sub">${m.hora} · ${m.metodoN}</div>
+                        <div class="mov-item-sub" style="color:var(--azul);">📍 ${m.km} · ⏱️ ${m.hrs}</div>
+                    </div>
+                    <div class="mov-item-right">
+                        <div class="mov-item-amount" style="color:${esI?'var(--verde)':'var(--rojo)'}">S/.${m.mon.toFixed(2)}</div>
+                        <div class="mov-item-actions">
+                            <button class="mov-action-btn" onclick="editarMovimiento(${idx})">✏️</button>
+                            <button class="mov-action-btn" onclick="eliminarMovimiento(${idx})">🗑️</button>
+                        </div>
+                    </div></div>`;
                 }
             });
             const tI = Object.values(dIng).reduce((a, b) => a + b, 0), tG = Object.values(dGas).reduce((a, b) => a + b, 0);
@@ -1138,8 +1751,8 @@
                 iniciarWatchGPS();
 
                 activo = true;
-                btn.innerText = "🛑 FINALIZAR";
-                btn.style.background = "#7f8c8d";
+                btn.innerHTML = "🛑 FINALIZAR TURNO";
+                btn.classList.add("activo");
 
             } else {
                 navigator.geolocation.clearWatch(watchId);
@@ -1152,8 +1765,8 @@
                 horaInicioTurno = null;
                 // NO borrar gt_inicio_FECHA para que el reporte siga usando la hora correcta
                 localStorage.removeItem('gt_inicio_turno');
-                btn.innerText = " 🚀 INICIAR TURNO";
-                btn.style.background = "var(--naranja)";
+                btn.innerHTML = "🚀 INICIAR TURNO";
+                btn.classList.remove("activo");
                 document.getElementById('monto').focus();
             }
         }
@@ -1260,18 +1873,16 @@
                 return;
             }
             lista.innerHTML = ultimos5.map((r, i) => `
-                <div class="item-comb">
-                    <div>
-                        <div class="comb-tipo">${r.tipo === 'GLP' ? '🔵' : '🟡'} ${r.tipo}</div>
-                        <div class="comb-detail">${r.fechaStr} · ${r.serviciosDesdeAnterior || 0} servicios</div>
-                        <div class="comb-detail">📍 ${r.kmCarga} → ${r.kmFin > 0 ? r.kmFin : '?'} (${r.duracion > 0 ? r.duracion + ' KM' : 'pendiente'})</div>
+                <div class="comb-item">
+                    <div class="comb-item-left">
+                        <b>${r.tipo === 'GLP' ? '🔵' : r.tipo === 'Dual' ? '🔵🟡' : '🟡'} ${r.tipo}</b>
+                        <small>${r.fechaStr} · ${r.serviciosDesdeAnterior || 0} servicios</small>
+                        <small>📍 ${r.kmCarga} → ${r.kmFin > 0 ? r.kmFin : '?'} · ${r.duracion > 0 ? r.duracion + ' KM' : 'pendiente'}</small>
                     </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:900; color:var(--naranja); font-size:15px;">S/. ${r.costo.toFixed(2)}</div>
-                        ${r.costoGlp > 0 ? `<div style="font-size:10px; color:rgba(255,255,255,0.5);">🔵 S/. ${r.costoGlp.toFixed(2)}</div>` : ''}
-                        ${r.costoGas > 0 ? `<div style="font-size:10px; color:rgba(255,255,255,0.5);">🟡 S/. ${r.costoGas.toFixed(2)}</div>` : ''}
-                        <div style="font-size:10px; color:rgba(255,255,255,0.4);">${r.duracion > 0 ? 'S/. '+(r.costo/r.duracion).toFixed(2)+'/KM' : ''}</div>
-                        <span onclick="eliminarCombustible(${i})" style="font-size:16px; cursor:pointer;">🗑️</span>
+                    <div class="comb-item-right">
+                        <div class="cost">S/. ${r.costo.toFixed(2)}</div>
+                        <div class="per-km">${r.duracion > 0 ? 'S/. '+(r.costo/r.duracion).toFixed(2)+'/km' : ''}</div>
+                        <button onclick="eliminarCombustible(${i})" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;margin-top:4px;">🗑️</button>
                     </div>
                 </div>`).join('');
         }
@@ -1299,22 +1910,22 @@
                     totalCosto += r.costo;
                     totalKm += r.duracion || 0;
                     totalServicios += r.serviciosDesdeAnterior || 0;
-                    html += `<div style="display:flex; justify-content:space-between; padding:12px; border-radius:12px; margin-bottom:8px; background:#f8f9fa; border-left:4px solid var(--naranja);">
-                        <div>
-                            <b>${r.tipo === 'GLP' ? '🔵' : '🟡'} ${r.tipo} — ${r.fechaStr}</b><br>
-                            <small style="color:#888;">📍 ${r.kmCarga} → ${r.kmFin > 0 ? r.kmFin : '?'} · ${r.duracion > 0 ? r.duracion+' KM' : 'pendiente'}</small><br>
-                            <small style="color:#888;">🔧 ${r.serviciosDesdeAnterior || 0} servicios en este tanque</small>
+                    html += `<div class="hist-item">
+                        <div class="hist-item-left">
+                            <b>${r.tipo === 'GLP' ? '🔵' : r.tipo === 'Dual' ? '🔵🟡' : '🟡'} ${r.tipo} — ${r.fechaStr}</b>
+                            <small>📍 ${r.kmCarga} → ${r.kmFin > 0 ? r.kmFin : '?'} · ${r.duracion > 0 ? r.duracion+' KM' : 'pendiente'}</small>
+                            <small>🔧 ${r.serviciosDesdeAnterior || 0} servicios en este tanque</small>
                         </div>
-                        <div style="text-align:right;">
-                            <b style="color:var(--naranja);">S/. ${r.costo.toFixed(2)}</b><br>
-                            <small style="color:#aaa;">${r.duracion > 0 ? 'S/. '+(r.costo/r.duracion).toFixed(2)+'/km' : ''}</small>
+                        <div class="hist-item-right">
+                            <b>S/. ${r.costo.toFixed(2)}</b>
+                            <small style="color:var(--text3); display:block;">${r.duracion > 0 ? 'S/. '+(r.costo/r.duracion).toFixed(2)+'/km' : ''}</small>
                         </div>
                     </div>`;
                 });
-                html += `<div style="background:#e8f4fd; border-radius:12px; padding:14px; margin-top:10px; border:2px solid var(--azul);">
-                    <div style="display:flex; justify-content:space-between; font-weight:900;"><span>⛽ Total gastado</span><span style="color:var(--naranja);">S/. ${totalCosto.toFixed(2)}</span></div>
-                    <div style="display:flex; justify-content:space-between; font-weight:900; margin-top:5px;"><span>🛣️ KM totales</span><span style="color:var(--azul);">${totalKm.toFixed(0)} KM</span></div>
-                    <div style="display:flex; justify-content:space-between; font-weight:900; margin-top:5px;"><span>🚕 Servicios totales</span><span style="color:var(--verde);">${totalServicios}</span></div>
+                html += `<div class="hist-total">
+                    <div class="t-row"><span>⛽ Total gastado</span><span style="color:var(--naranja);">S/. ${totalCosto.toFixed(2)}</span></div>
+                    <div class="t-row"><span>🛣️ KM totales</span><span style="color:var(--azul);">${totalKm.toFixed(0)} KM</span></div>
+                    <div class="t-row"><span>🚕 Servicios</span><span style="color:var(--verde);">${totalServicios}</span></div>
                 </div>`;
             }
             document.getElementById('tabla-historial-servicios').innerHTML = html;
@@ -1357,9 +1968,9 @@
         function editarMovimiento(idx) { let nV = prompt("Monto S/.", movs[idx].mon); if (nV) { movs[idx].mon = parseFloat(nV); localStorage.setItem('movs_v15', JSON.stringify(movs)); actualizarInterfaz(); } }
         function eliminarMovimiento(idx) { if (confirm("¿Eliminar?")) { movs.splice(idx, 1); localStorage.setItem('movs_v15', JSON.stringify(movs)); actualizarInterfaz(); } }
         
-        function filtrarPorMetodo(metodo, btn) { filtroMetodoReporte = metodo; document.querySelectorAll('.btn-filtro-pago').forEach(b => b.classList.remove('active')); btn.classList.add('active'); actualizarInterfaz(); }
-        function setMetodo(n, i, btn) { metodoActual = { n, i }; document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
-        function dibujarCats() { document.getElementById('cat-chips').innerHTML = cats.map(c => `<div class="cat-chip ${c.id === catSeleccionada ? 'activa' : ''}" onclick="catSeleccionada=${c.id};dibujarCats();">${c.i} ${c.n}</div>`).join(''); }
+        function filtrarPorMetodo(metodo, btn) { filtroMetodoReporte = metodo; document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active')); btn.classList.add('active'); actualizarInterfaz(); }
+        function setMetodo(n, i, btn) { metodoActual = { n, i }; document.querySelectorAll('#metodos-chips .chip').forEach(b => b.classList.remove('metodo-active')); btn.classList.add('metodo-active'); }
+        function dibujarCats() { document.getElementById('cat-chips').innerHTML = cats.map(c => `<div class="chip ${c.id === catSeleccionada ? 'activa' : ''}" onclick="catSeleccionada=${c.id};dibujarCats();">${c.i} ${c.n}</div>`).join(''); }
 
         function initCharts() { 
             const opt = { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, datalabels: { display: false } } }; 
@@ -1386,23 +1997,23 @@
         }
         function dibujarGestion() { 
             const l = document.getElementById('lista-gestion'); 
-            l.innerHTML = cats.map((c, i) => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid rgba(255,255,255,0.1); align-items:center;">
-                <span>${c.i} ${c.n}</span>
-                <div>
-                    <button onclick="moverCategoria(${i},-1)" style="background:none; border:none; color:white;">🔼</button>
-                    <button onclick="moverCategoria(${i},1)" style="background:none; border:none; color:white;">🔽</button>
-                    <button onclick="editarCategoria(${i})" style="background:none; border:none; color:white;">✏️</button>
-                    <button onclick="borrarCat(${i})" style="background:none; border:none; color:white;">🗑️</button>
+            l.innerHTML = cats.map((c, i) => `<div class="cat-manage-item">
+                <span style="font-weight:600; color:var(--text);">${c.i} ${c.n}</span>
+                <div class="cat-manage-actions">
+                    <button onclick="moverCategoria(${i},-1)">🔼</button>
+                    <button onclick="moverCategoria(${i},1)">🔽</button>
+                    <button onclick="editarCategoria(${i})">✏️</button>
+                    <button onclick="borrarCat(${i})">🗑️</button>
                 </div></div>`).join(''); 
         }
         function seleccionarEmoji(e) { emojiSeleccionado = e; document.getElementById('btn-emoji-actual').innerText = e; cerrarVariedad(); }
 
         function cambiarPeriodo(p, btn) { 
-            periodoActual = p; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); 
-            document.getElementById('input-fecha-filtro').style.display = (p === 'dia') ? 'inline-block' : 'none'; 
-            document.getElementById('visor-mes').style.display = (p === 'mes') ? 'block' : 'none'; 
-            document.getElementById('visor-semana').style.display = (p === 'semana') ? 'block' : 'none'; 
-            document.getElementById('visor-anio').style.display = (p === 'anio') ? 'block' : 'none'; 
+            periodoActual = p; document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); 
+            document.getElementById('input-fecha-filtro').style.display = (p === 'dia') ? 'block' : 'none'; 
+            document.getElementById('visor-mes').style.display = (p === 'mes') ? 'flex' : 'none'; 
+            document.getElementById('visor-semana').style.display = (p === 'semana') ? 'flex' : 'none'; 
+            document.getElementById('visor-anio').style.display = (p === 'anio') ? 'flex' : 'none'; 
             actualizarInterfaz(); 
         }
         function navegarSemana(n) { fRefSemana.setDate(fRefSemana.getDate() + n); actualizarInterfaz(); }
