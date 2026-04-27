@@ -7,8 +7,396 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>GT PUREQ - Pro</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
+        // ===== COMPARTIR COMO IMAGEN =====
+        let tipoReciboActual = 'reporte';
+
+        function generarReciboCanvas(tipo) {
+            tipoReciboActual = tipo;
+            const canvas = document.getElementById('canvas-recibo');
+            const ctx = canvas.getContext('2d');
+            const W = 360, H = tipo === 'semanal' ? 620 : 520;
+            canvas.width = W * 2; canvas.height = H * 2;
+            canvas.style.height = H + 'px';
+            ctx.scale(2, 2);
+
+            // Fondo
+            ctx.fillStyle = '#0f172a';
+            ctx.roundRect(0, 0, W, H, 20);
+            ctx.fill();
+
+            // Header
+            const grad = ctx.createLinearGradient(0, 0, W, 60);
+            grad.addColorStop(0, '#1e3a5f'); grad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = grad;
+            ctx.roundRect(0, 0, W, 70, [20, 20, 0, 0]);
+            ctx.fill();
+
+            // Logo texto
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText('GT PUREQ Pro', 20, 32);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px Arial';
+            ctx.fillText('🚕 Gestor Taxi · ' + new Date().toLocaleDateString('es-PE'), 20, 52);
+
+            // Línea separadora
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(20, 72); ctx.lineTo(W-20, 72); ctx.stroke();
+
+            let y = 90;
+
+            if (tipo === 'reporte') {
+                // Período
+                const fFiltro = document.getElementById('input-fecha-filtro').value;
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 10px Arial';
+                ctx.fillText('PERÍODO', 20, y); y += 18;
+                ctx.fillStyle = '#f1f5f9';
+                ctx.font = 'bold 14px Arial';
+                const periodoTexto = periodoActual === 'dia' ? fFiltro :
+                    periodoActual === 'semana' ? document.getElementById('txt-semana').innerText :
+                    periodoActual === 'mes' ? document.getElementById('txt-mes').innerText :
+                    document.getElementById('txt-anio').innerText;
+                ctx.fillText(periodoTexto, 20, y); y += 28;
+
+                // Ingresos y Gastos
+                const tI = document.getElementById('txt-total-ing').innerText;
+                const tG = document.getElementById('txt-total-gas').innerText;
+                const bal = `S/. ${saldoActualGlobal.toFixed(2)}`;
+
+                dibujarReciboCampo(ctx, '📈 INGRESOS', tI, '#22c55e', 20, y, W-40); y += 44;
+                dibujarReciboCampo(ctx, '📉 GASTOS', tG, '#ef4444', 20, y, W-40); y += 44;
+
+                // Balance
+                ctx.fillStyle = '#1e3a5f';
+                ctx.roundRect(20, y, W-40, 50, 12); ctx.fill();
+                ctx.fillStyle = '#3b82f6';
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText('💰 BALANCE NETO', 32, y+18);
+                ctx.fillStyle = saldoActualGlobal >= 0 ? '#22c55e' : '#ef4444';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(bal, W-32, y+32);
+                ctx.textAlign = 'left';
+                y += 62;
+
+                // Rendimiento
+                const rKm = document.getElementById('res-sol-km').innerText;
+                const rHr = document.getElementById('res-sol-hr').innerText;
+                const rango = document.getElementById('res-rango-horas').innerText;
+                ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px Arial';
+                ctx.fillText('📊 RENDIMIENTO', 20, y); y += 18;
+                dibujarReciboCampo(ctx, 'S/. por KM', rKm, '#3b82f6', 20, y, (W-50)/2); 
+                dibujarReciboCampo(ctx, 'S/. por Hora', rHr, '#3b82f6', (W/2)+5, y, (W-50)/2);
+                y += 44;
+                if (rango) {
+                    ctx.fillStyle = '#64748b'; ctx.font = '10px Arial';
+                    ctx.fillText(rango, 20, y); y += 20;
+                }
+
+            } else if (tipo === 'semanal') {
+                const lunes = getLunesDeSemana(new Date());
+                const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
+                const fmt = d => d.toLocaleDateString('es-PE',{day:'2-digit',month:'short'});
+                ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px Arial';
+                ctx.fillText('SEMANA', 20, y); y += 16;
+                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 13px Arial';
+                ctx.fillText(`${fmt(lunes)} — ${fmt(domingo)}`, 20, y); y += 26;
+
+                const dias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+                const historial = JSON.parse(localStorage.getItem('gt_historial_semanal')) || {};
+                let totalKm = 0, totalIng = 0;
+
+                for (let i = 0; i < 7; i++) {
+                    const fechaDia = new Date(lunes);
+                    fechaDia.setDate(lunes.getDate() + i);
+                    const fechaStr = fechaDia.toLocaleDateString('en-CA');
+                    const esHoy = fechaStr === new Date().toLocaleDateString('en-CA');
+                    const ciclo = historial[fechaStr];
+                    const kmDia = ciclo ? ciclo.total : 0;
+                    const ingDia = movs.filter(m => m.tipo==='ingreso' && new Date(m.fecha).toLocaleDateString('en-CA')===fechaStr).reduce((a,b)=>a+b.mon,0);
+                    totalKm += kmDia; totalIng += ingDia;
+
+                    ctx.fillStyle = esHoy ? 'rgba(59,130,246,0.2)' : kmDia > 0 ? 'rgba(34,197,94,0.1)' : '#1e293b';
+                    ctx.roundRect(20, y, W-40, 36, 8); ctx.fill();
+                    if (esHoy) { ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.roundRect(20, y, W-40, 36, 8); ctx.stroke(); }
+
+                    ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 13px Arial'; ctx.textAlign = 'left';
+                    ctx.fillText(dias[i], 30, y+14);
+                    ctx.fillStyle = '#94a3b8'; ctx.font = '10px Arial';
+                    ctx.fillText(fechaDia.toLocaleDateString('es-PE',{day:'2-digit',month:'short'}), 30, y+28);
+                    ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Arial'; ctx.textAlign = 'right';
+                    ctx.fillText(kmDia.toFixed(0)+' KM', W-120, y+14);
+                    ctx.fillStyle = '#22c55e'; ctx.font = 'bold 13px Arial';
+                    ctx.fillText('S/. '+ingDia.toFixed(2), W-30, y+14);
+                    ctx.textAlign = 'left';
+                    y += 42;
+                }
+
+                // Totales
+                ctx.fillStyle = 'rgba(59,130,246,0.2)';
+                ctx.roundRect(20, y, W-40, 52, 12); ctx.fill();
+                ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.5;
+                ctx.roundRect(20, y, W-40, 52, 12); ctx.stroke();
+                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 12px Arial';
+                ctx.fillText('🛣️ TOTAL KM', 32, y+20);
+                ctx.fillText('💰 INGRESOS', 32, y+40);
+                ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 15px Arial'; ctx.textAlign = 'right';
+                ctx.fillText(totalKm.toFixed(0)+' KM', W-30, y+20);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillText('S/. '+totalIng.toFixed(2), W-30, y+40);
+                ctx.textAlign = 'left';
+            }
+
+            // Footer
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(0, H-30, W, 30);
+            ctx.fillStyle = '#64748b'; ctx.font = '10px Arial';
+            ctx.fillText('GT PUREQ Pro · Generado ' + new Date().toLocaleString('es-PE'), 20, H-12);
+
+            document.getElementById('modal-recibo').style.display = 'flex';
+        }
+
+        function dibujarReciboCampo(ctx, label, valor, color, x, y, w) {
+            ctx.fillStyle = '#1e293b';
+            ctx.roundRect(x, y, w, 38, 8); ctx.fill();
+            ctx.fillStyle = '#64748b'; ctx.font = '9px Arial'; ctx.textAlign = 'left';
+            ctx.fillText(label, x+10, y+13);
+            ctx.fillStyle = color; ctx.font = 'bold 14px Arial';
+            ctx.fillText(valor, x+10, y+30);
+        }
+
+        function compartirCanvasWhatsApp() {
+            const canvas = document.getElementById('canvas-recibo');
+            canvas.toBlob(async blob => {
+                if (navigator.share && navigator.canShare({files: [new File([blob], 'recibo-gt.png', {type:'image/png'})]})) {
+                    await navigator.share({
+                        files: [new File([blob], 'recibo-gt.png', {type:'image/png'})],
+                        title: 'Reporte GT PUREQ Pro'
+                    });
+                } else {
+                    // Fallback: abrir WhatsApp con texto
+                    compartirWhatsApp();
+                }
+            }, 'image/png');
+        }
+
+        function descargarRecibo() {
+            const canvas = document.getElementById('canvas-recibo');
+            const a = document.createElement('a');
+            a.download = 'recibo-gt-pureq-' + new Date().toLocaleDateString('en-CA') + '.png';
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+        }
+
+        // Sobreescribir compartirWhatsApp para mostrar recibo primero
+        const _compartirWhatsAppOriginal = compartirWhatsApp;
+        function compartirWhatsApp() {
+            generarReciboCanvas('reporte');
+        }
+
+        function compartirResumenWhatsApp() {
+            generarReciboCanvas('semanal');
+        }
+        // ===== FIN COMPARTIR COMO IMAGEN =====
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2">
+        // ===== COMPARTIR COMO IMAGEN =====
+        let tipoReciboActual = 'reporte';
+
+        function generarReciboCanvas(tipo) {
+            tipoReciboActual = tipo;
+            const canvas = document.getElementById('canvas-recibo');
+            const ctx = canvas.getContext('2d');
+            const W = 360, H = tipo === 'semanal' ? 620 : 520;
+            canvas.width = W * 2; canvas.height = H * 2;
+            canvas.style.height = H + 'px';
+            ctx.scale(2, 2);
+
+            // Fondo
+            ctx.fillStyle = '#0f172a';
+            ctx.roundRect(0, 0, W, H, 20);
+            ctx.fill();
+
+            // Header
+            const grad = ctx.createLinearGradient(0, 0, W, 60);
+            grad.addColorStop(0, '#1e3a5f'); grad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = grad;
+            ctx.roundRect(0, 0, W, 70, [20, 20, 0, 0]);
+            ctx.fill();
+
+            // Logo texto
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText('GT PUREQ Pro', 20, 32);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px Arial';
+            ctx.fillText('🚕 Gestor Taxi · ' + new Date().toLocaleDateString('es-PE'), 20, 52);
+
+            // Línea separadora
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(20, 72); ctx.lineTo(W-20, 72); ctx.stroke();
+
+            let y = 90;
+
+            if (tipo === 'reporte') {
+                // Período
+                const fFiltro = document.getElementById('input-fecha-filtro').value;
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 10px Arial';
+                ctx.fillText('PERÍODO', 20, y); y += 18;
+                ctx.fillStyle = '#f1f5f9';
+                ctx.font = 'bold 14px Arial';
+                const periodoTexto = periodoActual === 'dia' ? fFiltro :
+                    periodoActual === 'semana' ? document.getElementById('txt-semana').innerText :
+                    periodoActual === 'mes' ? document.getElementById('txt-mes').innerText :
+                    document.getElementById('txt-anio').innerText;
+                ctx.fillText(periodoTexto, 20, y); y += 28;
+
+                // Ingresos y Gastos
+                const tI = document.getElementById('txt-total-ing').innerText;
+                const tG = document.getElementById('txt-total-gas').innerText;
+                const bal = `S/. ${saldoActualGlobal.toFixed(2)}`;
+
+                dibujarReciboCampo(ctx, '📈 INGRESOS', tI, '#22c55e', 20, y, W-40); y += 44;
+                dibujarReciboCampo(ctx, '📉 GASTOS', tG, '#ef4444', 20, y, W-40); y += 44;
+
+                // Balance
+                ctx.fillStyle = '#1e3a5f';
+                ctx.roundRect(20, y, W-40, 50, 12); ctx.fill();
+                ctx.fillStyle = '#3b82f6';
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText('💰 BALANCE NETO', 32, y+18);
+                ctx.fillStyle = saldoActualGlobal >= 0 ? '#22c55e' : '#ef4444';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(bal, W-32, y+32);
+                ctx.textAlign = 'left';
+                y += 62;
+
+                // Rendimiento
+                const rKm = document.getElementById('res-sol-km').innerText;
+                const rHr = document.getElementById('res-sol-hr').innerText;
+                const rango = document.getElementById('res-rango-horas').innerText;
+                ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px Arial';
+                ctx.fillText('📊 RENDIMIENTO', 20, y); y += 18;
+                dibujarReciboCampo(ctx, 'S/. por KM', rKm, '#3b82f6', 20, y, (W-50)/2); 
+                dibujarReciboCampo(ctx, 'S/. por Hora', rHr, '#3b82f6', (W/2)+5, y, (W-50)/2);
+                y += 44;
+                if (rango) {
+                    ctx.fillStyle = '#64748b'; ctx.font = '10px Arial';
+                    ctx.fillText(rango, 20, y); y += 20;
+                }
+
+            } else if (tipo === 'semanal') {
+                const lunes = getLunesDeSemana(new Date());
+                const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
+                const fmt = d => d.toLocaleDateString('es-PE',{day:'2-digit',month:'short'});
+                ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px Arial';
+                ctx.fillText('SEMANA', 20, y); y += 16;
+                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 13px Arial';
+                ctx.fillText(`${fmt(lunes)} — ${fmt(domingo)}`, 20, y); y += 26;
+
+                const dias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+                const historial = JSON.parse(localStorage.getItem('gt_historial_semanal')) || {};
+                let totalKm = 0, totalIng = 0;
+
+                for (let i = 0; i < 7; i++) {
+                    const fechaDia = new Date(lunes);
+                    fechaDia.setDate(lunes.getDate() + i);
+                    const fechaStr = fechaDia.toLocaleDateString('en-CA');
+                    const esHoy = fechaStr === new Date().toLocaleDateString('en-CA');
+                    const ciclo = historial[fechaStr];
+                    const kmDia = ciclo ? ciclo.total : 0;
+                    const ingDia = movs.filter(m => m.tipo==='ingreso' && new Date(m.fecha).toLocaleDateString('en-CA')===fechaStr).reduce((a,b)=>a+b.mon,0);
+                    totalKm += kmDia; totalIng += ingDia;
+
+                    ctx.fillStyle = esHoy ? 'rgba(59,130,246,0.2)' : kmDia > 0 ? 'rgba(34,197,94,0.1)' : '#1e293b';
+                    ctx.roundRect(20, y, W-40, 36, 8); ctx.fill();
+                    if (esHoy) { ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.roundRect(20, y, W-40, 36, 8); ctx.stroke(); }
+
+                    ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 13px Arial'; ctx.textAlign = 'left';
+                    ctx.fillText(dias[i], 30, y+14);
+                    ctx.fillStyle = '#94a3b8'; ctx.font = '10px Arial';
+                    ctx.fillText(fechaDia.toLocaleDateString('es-PE',{day:'2-digit',month:'short'}), 30, y+28);
+                    ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Arial'; ctx.textAlign = 'right';
+                    ctx.fillText(kmDia.toFixed(0)+' KM', W-120, y+14);
+                    ctx.fillStyle = '#22c55e'; ctx.font = 'bold 13px Arial';
+                    ctx.fillText('S/. '+ingDia.toFixed(2), W-30, y+14);
+                    ctx.textAlign = 'left';
+                    y += 42;
+                }
+
+                // Totales
+                ctx.fillStyle = 'rgba(59,130,246,0.2)';
+                ctx.roundRect(20, y, W-40, 52, 12); ctx.fill();
+                ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.5;
+                ctx.roundRect(20, y, W-40, 52, 12); ctx.stroke();
+                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 12px Arial';
+                ctx.fillText('🛣️ TOTAL KM', 32, y+20);
+                ctx.fillText('💰 INGRESOS', 32, y+40);
+                ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 15px Arial'; ctx.textAlign = 'right';
+                ctx.fillText(totalKm.toFixed(0)+' KM', W-30, y+20);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillText('S/. '+totalIng.toFixed(2), W-30, y+40);
+                ctx.textAlign = 'left';
+            }
+
+            // Footer
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(0, H-30, W, 30);
+            ctx.fillStyle = '#64748b'; ctx.font = '10px Arial';
+            ctx.fillText('GT PUREQ Pro · Generado ' + new Date().toLocaleString('es-PE'), 20, H-12);
+
+            document.getElementById('modal-recibo').style.display = 'flex';
+        }
+
+        function dibujarReciboCampo(ctx, label, valor, color, x, y, w) {
+            ctx.fillStyle = '#1e293b';
+            ctx.roundRect(x, y, w, 38, 8); ctx.fill();
+            ctx.fillStyle = '#64748b'; ctx.font = '9px Arial'; ctx.textAlign = 'left';
+            ctx.fillText(label, x+10, y+13);
+            ctx.fillStyle = color; ctx.font = 'bold 14px Arial';
+            ctx.fillText(valor, x+10, y+30);
+        }
+
+        function compartirCanvasWhatsApp() {
+            const canvas = document.getElementById('canvas-recibo');
+            canvas.toBlob(async blob => {
+                if (navigator.share && navigator.canShare({files: [new File([blob], 'recibo-gt.png', {type:'image/png'})]})) {
+                    await navigator.share({
+                        files: [new File([blob], 'recibo-gt.png', {type:'image/png'})],
+                        title: 'Reporte GT PUREQ Pro'
+                    });
+                } else {
+                    // Fallback: abrir WhatsApp con texto
+                    compartirWhatsApp();
+                }
+            }, 'image/png');
+        }
+
+        function descargarRecibo() {
+            const canvas = document.getElementById('canvas-recibo');
+            const a = document.createElement('a');
+            a.download = 'recibo-gt-pureq-' + new Date().toLocaleDateString('en-CA') + '.png';
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+        }
+
+        // Sobreescribir compartirWhatsApp para mostrar recibo primero
+        const _compartirWhatsAppOriginal = compartirWhatsApp;
+        function compartirWhatsApp() {
+            generarReciboCanvas('reporte');
+        }
+
+        function compartirResumenWhatsApp() {
+            generarReciboCanvas('semanal');
+        }
+        // ===== FIN COMPARTIR COMO IMAGEN =====
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ===== DESIGN TOKENS ===== */
@@ -62,7 +450,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
 }
 .page.hidden { transform: translateX(100%); pointer-events: none; }
 #page-reportes, #page-perfil, #page-costos { z-index: 10; }
-.page-scroll { flex: 1; overflow-y: auto; padding: 0 15px 20px; -webkit-overflow-scrolling: touch; }
+.page-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 0 15px 20px; -webkit-overflow-scrolling: touch; width: 100%; }
 .page-scroll::-webkit-scrollbar { display: none; }
 
 /* ===== TOP BAR ===== */
@@ -143,7 +531,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
 .chip.metodo-active { border-color: var(--accent); background: rgba(245,158,11,0.15); color: var(--accent); }
 
 /* ===== INPUT ROW ===== */
-.input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.input-row { display: flex; gap: 10px; margin-bottom: 10px; min-width: 0; overflow: hidden; }
 .input-monto {
     flex: 1; padding: 16px 20px; border-radius: var(--radius);
     border: 1.5px solid var(--border); background: var(--surface);
@@ -162,10 +550,10 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
 /* ===== GPS INFO ROW ===== */
 .gps-info-row { display: flex; gap: 10px; margin-bottom: 10px; }
 .gps-badge {
-    flex: 1; padding: 12px 8px; border-radius: var(--radius-sm);
+    flex: 1; min-width: 0; padding: 12px 4px; border-radius: var(--radius-sm);
     background: var(--surface); border: 1.5px solid var(--accent);
     text-align: center; font-weight: 700; color: var(--accent);
-    font-size: 13px; outline: none;
+    font-size: 12px; outline: none; overflow: hidden;
 }
 
 /* ===== ACTION BUTTONS ===== */
@@ -774,7 +1162,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
         <div class="mov-list" id="lista"></div>
 
         <!-- WhatsApp -->
-        <button class="btn-wa" onclick="compartirWhatsApp()">📲 Compartir por WhatsApp</button>
+        <button class="btn-wa" onclick="generarReciboCanvas('reporte')">🖼️ Compartir como Imagen</button>
     </div>
 </div>
 
@@ -1026,6 +1414,18 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
     </div>
 </div>
 
+<!-- MODAL RECIBO IMAGEN -->
+<div id="modal-recibo" class="modal center-modal">
+    <div class="modal-sheet center" style="padding:16px;">
+        <div class="modal-handle"></div>
+        <div style="font-size:15px; font-weight:800; color:var(--text); margin-bottom:12px;">📋 Vista previa del recibo</div>
+        <canvas id="canvas-recibo" style="width:100%; border-radius:12px; display:block;"></canvas>
+        <button onclick="compartirCanvasWhatsApp()" style="width:100%; margin-top:12px; padding:14px; border:none; border-radius:12px; background:#25D366; color:white; font-weight:800; font-size:15px; cursor:pointer;">📲 Compartir por WhatsApp</button>
+        <button onclick="descargarRecibo()" style="width:100%; margin-top:8px; padding:12px; border:none; border-radius:12px; background:var(--azul); color:white; font-weight:700; font-size:14px; cursor:pointer;">💾 Guardar imagen</button>
+        <button onclick="cerrarModalesYModos()" style="width:100%; margin-top:8px; padding:12px; border:none; border-radius:12px; background:var(--bg3); color:var(--text2); font-weight:700; font-size:14px; cursor:pointer;">Cerrar</button>
+    </div>
+</div>
+
 <!-- ===== MODALS ===== -->
 
 <!-- QR Visor -->
@@ -1122,7 +1522,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
             <div class="t-row"><span>🛣️ TOTAL KM</span><span id="total-km-semana" style="color:var(--azul);">0.0 KM</span></div>
             <div class="t-row"><span>💰 INGRESOS</span><span id="total-ing-semana" style="color:var(--verde);">S/. 0.00</span></div>
         </div>
-        <button onclick="compartirResumenWhatsApp()" class="btn-wa" style="margin:12px 0 0;">📲 Compartir por WhatsApp</button>
+        <button onclick="generarReciboCanvas('semanal')" class="btn-wa" style="margin:12px 0 0;">🖼️ Compartir como Imagen</button>
         <button onclick="cerrarModalesYModos()" class="btn-modal-secondary">Cerrar</button>
     </div>
 </div>
@@ -1139,6 +1539,24 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
 </div>
 
 <script>
+        // Polyfill roundRect para Canvas en navegadores antiguos
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (typeof r === 'number') r = [r,r,r,r];
+                this.beginPath();
+                this.moveTo(x + r[0], y);
+                this.lineTo(x + w - r[1], y);
+                this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+                this.lineTo(x + w, y + h - r[2]);
+                this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+                this.lineTo(x + r[3], y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+                this.lineTo(x, y + r[0]);
+                this.quadraticCurveTo(x, y, x + r[0], y);
+                this.closePath();
+                return this;
+            };
+        }
         Chart.register(ChartDataLabels);
         let movs = JSON.parse(localStorage.getItem('movs_v15')) || [];
         let cats = JSON.parse(localStorage.getItem('cats_v15')) || [{id: 0, n: "Carrera", i: " 🚕 "}, {id: 1, n: "Gasolina", i: " ⛽ "}, {id: 2, n: "Comida", i: " 🍔 "}];
@@ -1970,7 +2388,13 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
         
         function filtrarPorMetodo(metodo, btn) { filtroMetodoReporte = metodo; document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active')); btn.classList.add('active'); actualizarInterfaz(); }
         function setMetodo(n, i, btn) { metodoActual = { n, i }; document.querySelectorAll('#metodos-chips .chip').forEach(b => b.classList.remove('metodo-active')); btn.classList.add('metodo-active'); }
-        function dibujarCats() { document.getElementById('cat-chips').innerHTML = cats.map(c => `<div class="chip ${c.id === catSeleccionada ? 'activa' : ''}" onclick="catSeleccionada=${c.id};dibujarCats();">${c.i} ${c.n}</div>`).join(''); }
+        function dibujarCats() {
+            // Ordenar por frecuencia de uso (mayor a menor)
+            const conteo = {};
+            movs.forEach(m => { conteo[m.catN] = (conteo[m.catN] || 0) + 1; });
+            const catsSorted = [...cats].sort((a, b) => (conteo[b.n] || 0) - (conteo[a.n] || 0));
+            document.getElementById('cat-chips').innerHTML = catsSorted.map(c => `<div class="chip ${c.id === catSeleccionada ? 'activa' : ''}" onclick="catSeleccionada=${c.id};dibujarCats();">${c.i} ${c.n}</div>`).join('');
+        }
 
         function initCharts() { 
             const opt = { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, datalabels: { display: false } } }; 
@@ -2186,6 +2610,200 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
         }
         // ===== FIN CONFIRMAR CICLO Y RESUMEN SEMANAL =====
 
-    </script>
+    
+        // ===== COMPARTIR COMO IMAGEN =====
+        let tipoReciboActual = 'reporte';
+
+        function generarReciboCanvas(tipo) {
+            tipoReciboActual = tipo;
+            const canvas = document.getElementById('canvas-recibo');
+            const ctx = canvas.getContext('2d');
+            const W = 360, H = tipo === 'semanal' ? 620 : 520;
+            canvas.width = W * 2; canvas.height = H * 2;
+            canvas.style.height = H + 'px';
+            ctx.scale(2, 2);
+
+            // Fondo
+            ctx.fillStyle = '#0f172a';
+            ctx.roundRect(0, 0, W, H, 20);
+            ctx.fill();
+
+            // Header
+            const grad = ctx.createLinearGradient(0, 0, W, 60);
+            grad.addColorStop(0, '#1e3a5f'); grad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = grad;
+            ctx.roundRect(0, 0, W, 70, [20, 20, 0, 0]);
+            ctx.fill();
+
+            // Logo texto
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText('GT PUREQ Pro', 20, 32);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px Arial';
+            ctx.fillText('🚕 Gestor Taxi · ' + new Date().toLocaleDateString('es-PE'), 20, 52);
+
+            // Línea separadora
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(20, 72); ctx.lineTo(W-20, 72); ctx.stroke();
+
+            let y = 90;
+
+            if (tipo === 'reporte') {
+                // Período
+                const fFiltro = document.getElementById('input-fecha-filtro').value;
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 10px Arial';
+                ctx.fillText('PERÍODO', 20, y); y += 18;
+                ctx.fillStyle = '#f1f5f9';
+                ctx.font = 'bold 14px Arial';
+                const periodoTexto = periodoActual === 'dia' ? fFiltro :
+                    periodoActual === 'semana' ? document.getElementById('txt-semana').innerText :
+                    periodoActual === 'mes' ? document.getElementById('txt-mes').innerText :
+                    document.getElementById('txt-anio').innerText;
+                ctx.fillText(periodoTexto, 20, y); y += 28;
+
+                // Ingresos y Gastos
+                const tI = document.getElementById('txt-total-ing').innerText;
+                const tG = document.getElementById('txt-total-gas').innerText;
+                const bal = `S/. ${saldoActualGlobal.toFixed(2)}`;
+
+                dibujarReciboCampo(ctx, '📈 INGRESOS', tI, '#22c55e', 20, y, W-40); y += 44;
+                dibujarReciboCampo(ctx, '📉 GASTOS', tG, '#ef4444', 20, y, W-40); y += 44;
+
+                // Balance
+                ctx.fillStyle = '#1e3a5f';
+                ctx.roundRect(20, y, W-40, 50, 12); ctx.fill();
+                ctx.fillStyle = '#3b82f6';
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText('💰 BALANCE NETO', 32, y+18);
+                ctx.fillStyle = saldoActualGlobal >= 0 ? '#22c55e' : '#ef4444';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(bal, W-32, y+32);
+                ctx.textAlign = 'left';
+                y += 62;
+
+                // Rendimiento
+                const rKm = document.getElementById('res-sol-km').innerText;
+                const rHr = document.getElementById('res-sol-hr').innerText;
+                const rango = document.getElementById('res-rango-horas').innerText;
+                ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px Arial';
+                ctx.fillText('📊 RENDIMIENTO', 20, y); y += 18;
+                dibujarReciboCampo(ctx, 'S/. por KM', rKm, '#3b82f6', 20, y, (W-50)/2); 
+                dibujarReciboCampo(ctx, 'S/. por Hora', rHr, '#3b82f6', (W/2)+5, y, (W-50)/2);
+                y += 44;
+                if (rango) {
+                    ctx.fillStyle = '#64748b'; ctx.font = '10px Arial';
+                    ctx.fillText(rango, 20, y); y += 20;
+                }
+
+            } else if (tipo === 'semanal') {
+                const lunes = getLunesDeSemana(new Date());
+                const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
+                const fmt = d => d.toLocaleDateString('es-PE',{day:'2-digit',month:'short'});
+                ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px Arial';
+                ctx.fillText('SEMANA', 20, y); y += 16;
+                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 13px Arial';
+                ctx.fillText(`${fmt(lunes)} — ${fmt(domingo)}`, 20, y); y += 26;
+
+                const dias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+                const historial = JSON.parse(localStorage.getItem('gt_historial_semanal')) || {};
+                let totalKm = 0, totalIng = 0;
+
+                for (let i = 0; i < 7; i++) {
+                    const fechaDia = new Date(lunes);
+                    fechaDia.setDate(lunes.getDate() + i);
+                    const fechaStr = fechaDia.toLocaleDateString('en-CA');
+                    const esHoy = fechaStr === new Date().toLocaleDateString('en-CA');
+                    const ciclo = historial[fechaStr];
+                    const kmDia = ciclo ? ciclo.total : 0;
+                    const ingDia = movs.filter(m => m.tipo==='ingreso' && new Date(m.fecha).toLocaleDateString('en-CA')===fechaStr).reduce((a,b)=>a+b.mon,0);
+                    totalKm += kmDia; totalIng += ingDia;
+
+                    ctx.fillStyle = esHoy ? 'rgba(59,130,246,0.2)' : kmDia > 0 ? 'rgba(34,197,94,0.1)' : '#1e293b';
+                    ctx.roundRect(20, y, W-40, 36, 8); ctx.fill();
+                    if (esHoy) { ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.roundRect(20, y, W-40, 36, 8); ctx.stroke(); }
+
+                    ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 13px Arial'; ctx.textAlign = 'left';
+                    ctx.fillText(dias[i], 30, y+14);
+                    ctx.fillStyle = '#94a3b8'; ctx.font = '10px Arial';
+                    ctx.fillText(fechaDia.toLocaleDateString('es-PE',{day:'2-digit',month:'short'}), 30, y+28);
+                    ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Arial'; ctx.textAlign = 'right';
+                    ctx.fillText(kmDia.toFixed(0)+' KM', W-120, y+14);
+                    ctx.fillStyle = '#22c55e'; ctx.font = 'bold 13px Arial';
+                    ctx.fillText('S/. '+ingDia.toFixed(2), W-30, y+14);
+                    ctx.textAlign = 'left';
+                    y += 42;
+                }
+
+                // Totales
+                ctx.fillStyle = 'rgba(59,130,246,0.2)';
+                ctx.roundRect(20, y, W-40, 52, 12); ctx.fill();
+                ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.5;
+                ctx.roundRect(20, y, W-40, 52, 12); ctx.stroke();
+                ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 12px Arial';
+                ctx.fillText('🛣️ TOTAL KM', 32, y+20);
+                ctx.fillText('💰 INGRESOS', 32, y+40);
+                ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 15px Arial'; ctx.textAlign = 'right';
+                ctx.fillText(totalKm.toFixed(0)+' KM', W-30, y+20);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillText('S/. '+totalIng.toFixed(2), W-30, y+40);
+                ctx.textAlign = 'left';
+            }
+
+            // Footer
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(0, H-30, W, 30);
+            ctx.fillStyle = '#64748b'; ctx.font = '10px Arial';
+            ctx.fillText('GT PUREQ Pro · Generado ' + new Date().toLocaleString('es-PE'), 20, H-12);
+
+            document.getElementById('modal-recibo').style.display = 'flex';
+        }
+
+        function dibujarReciboCampo(ctx, label, valor, color, x, y, w) {
+            ctx.fillStyle = '#1e293b';
+            ctx.roundRect(x, y, w, 38, 8); ctx.fill();
+            ctx.fillStyle = '#64748b'; ctx.font = '9px Arial'; ctx.textAlign = 'left';
+            ctx.fillText(label, x+10, y+13);
+            ctx.fillStyle = color; ctx.font = 'bold 14px Arial';
+            ctx.fillText(valor, x+10, y+30);
+        }
+
+        function compartirCanvasWhatsApp() {
+            const canvas = document.getElementById('canvas-recibo');
+            canvas.toBlob(async blob => {
+                if (navigator.share && navigator.canShare({files: [new File([blob], 'recibo-gt.png', {type:'image/png'})]})) {
+                    await navigator.share({
+                        files: [new File([blob], 'recibo-gt.png', {type:'image/png'})],
+                        title: 'Reporte GT PUREQ Pro'
+                    });
+                } else {
+                    // Fallback: abrir WhatsApp con texto
+                    compartirWhatsApp();
+                }
+            }, 'image/png');
+        }
+
+        function descargarRecibo() {
+            const canvas = document.getElementById('canvas-recibo');
+            const a = document.createElement('a');
+            a.download = 'recibo-gt-pureq-' + new Date().toLocaleDateString('en-CA') + '.png';
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+        }
+
+        // Sobreescribir compartirWhatsApp para mostrar recibo primero
+        const _compartirWhatsAppOriginal = compartirWhatsApp;
+        function compartirWhatsApp() {
+            generarReciboCanvas('reporte');
+        }
+
+        function compartirResumenWhatsApp() {
+            generarReciboCanvas('semanal');
+        }
+        // ===== FIN COMPARTIR COMO IMAGEN =====
+</script>
 </body>
 </html>
