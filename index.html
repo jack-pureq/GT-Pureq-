@@ -9,7 +9,6 @@
 <title>GT PUREQ - Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ===== DESIGN TOKENS ===== */
@@ -420,8 +419,6 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
     justify-content: center; z-index: 1000;
     backdrop-filter: blur(4px);
 }
-#modal-recibo { z-index: 1100; }
-#modal-recibo { z-index: 1100; }
 .modal.center-modal { align-items: center; }
 .modal-sheet {
     background: var(--surface); border-radius: 24px 24px 0 0;
@@ -603,65 +600,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
 .btn-calcular:active { transform: scale(0.98); }
 /* ===== FIN CALCULADORA COSTOS ===== */
 
-/* ===== RECIBO EXPORTABLE ===== */
-#recibo-exportable {
-    position: fixed; left: -9999px; top: 0;
-    width: 360px; background: #0f172a;
-    border-radius: 20px; overflow: hidden;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    z-index: -1;
-}
-.recibo-header {
-    background: linear-gradient(135deg, #1e3a5f, #0f172a);
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid #334155;
-}
-.recibo-brand { font-size: 22px; font-weight: 900; color: #f59e0b; }
-.recibo-sub { font-size: 11px; color: #64748b; margin-top: 3px; }
-.recibo-body { padding: 16px 20px; }
-.recibo-label { font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-.recibo-value { font-size: 15px; font-weight: 800; color: #f1f5f9; margin-bottom: 14px; }
-.recibo-card {
-    background: #1e293b; border-radius: 12px; padding: 12px 14px;
-    margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
-}
-.recibo-card-label { font-size: 11px; color: #94a3b8; font-weight: 600; }
-.recibo-card-value { font-size: 18px; font-weight: 900; }
-.recibo-balance {
-    background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(34,197,94,0.1));
-    border: 1px solid #3b82f6; border-radius: 12px; padding: 14px;
-    text-align: center; margin-bottom: 12px;
-}
-.recibo-balance-label { font-size: 10px; color: #64748b; font-weight: 700; letter-spacing: 1px; }
-.recibo-balance-value { font-size: 28px; font-weight: 900; margin-top: 4px; }
-.recibo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-.recibo-grid-item { background: #1e293b; border-radius: 10px; padding: 10px 12px; }
-.recibo-grid-label { font-size: 10px; color: #64748b; font-weight: 600; }
-.recibo-grid-value { font-size: 15px; font-weight: 800; color: #3b82f6; margin-top: 3px; }
-.recibo-rango { font-size: 10px; color: #64748b; text-align: center; margin-top: 3px; }
-.recibo-sep { height: 1px; background: #334155; margin: 12px 0; }
-.recibo-semana-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 9px 12px; border-radius: 8px; margin-bottom: 5px;
-    background: #1e293b;
-}
-.recibo-semana-row.hoy { background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; }
-.recibo-semana-row.confirmado { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); }
-.recibo-semana-dia { font-size: 13px; font-weight: 700; color: #f1f5f9; }
-.recibo-semana-fecha { font-size: 10px; color: #64748b; }
-.recibo-semana-km { font-size: 13px; font-weight: 800; color: #3b82f6; }
-.recibo-semana-ing { font-size: 12px; font-weight: 700; color: #22c55e; }
-.recibo-semana-vacio { font-size: 11px; color: #475569; font-style: italic; }
-.recibo-totales {
-    background: rgba(59,130,246,0.15); border: 1.5px solid #3b82f6;
-    border-radius: 12px; padding: 14px; margin-top: 8px;
-}
-.recibo-total-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; padding: 3px 0; }
-.recibo-footer {
-    background: #1e293b; padding: 10px 20px;
-    font-size: 10px; color: #475569; text-align: center;
-}
-/* ===== FIN RECIBO EXPORTABLE ===== */
+
 
 @media (max-height: 420px) {
     .balance-card { padding: 12px 16px; margin-bottom: 8px; }
@@ -837,7 +776,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
         <div class="mov-list" id="lista"></div>
 
         <!-- WhatsApp -->
-        <button class="btn-wa" onclick="generarReciboCanvas('reporte')">🖼️ Compartir como Imagen</button>
+        <button class="btn-wa" onclick="generarReciboCanvas('reporte')">📲 Compartir por WhatsApp</button>
     </div>
 </div>
 
@@ -1089,23 +1028,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
     </div>
 </div>
 
-<!-- RECIBO EXPORTABLE (oculto, se convierte a imagen) -->
-<div id="recibo-exportable"></div>
 
-<!-- MODAL RECIBO IMAGEN -->
-<div id="modal-recibo" class="modal center-modal">
-    <div class="modal-sheet center" style="padding:16px;">
-        <div class="modal-handle"></div>
-        <div style="font-size:15px; font-weight:800; color:var(--text); margin-bottom:12px;">Vista previa del recibo</div>
-        <div id="recibo-preview-wrap" style="width:100%; border-radius:12px; overflow:hidden; background:#0f172a; min-height:80px; display:flex; align-items:center; justify-content:center;">
-            <img id="recibo-img-preview" style="width:100%; display:none; border-radius:12px;">
-            <div id="recibo-loading" style="color:#64748b; font-size:13px; padding:20px;">Generando recibo...</div>
-        </div>
-        <button onclick="compartirReciboWhatsApp()" id="btn-compartir-recibo" style="width:100%; margin-top:12px; padding:14px; border:none; border-radius:12px; background:#25D366; color:white; font-weight:800; font-size:15px; cursor:pointer; display:none;">Compartir por WhatsApp</button>
-        <button onclick="descargarRecibo()" id="btn-descargar-recibo" style="width:100%; margin-top:8px; padding:12px; border:none; border-radius:12px; background:var(--azul); color:white; font-weight:700; font-size:14px; cursor:pointer; display:none;">Guardar imagen</button>
-        <button onclick="cerrarModalesYModos()" style="width:100%; margin-top:8px; padding:12px; border:none; border-radius:12px; background:var(--bg3); color:var(--text2); font-weight:700; font-size:14px; cursor:pointer;">Cerrar</button>
-    </div>
-</div>
 
 <!-- ===== MODALS ===== -->
 
@@ -1203,7 +1126,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
             <div class="t-row"><span>🛣️ TOTAL KM</span><span id="total-km-semana" style="color:var(--azul);">0.0 KM</span></div>
             <div class="t-row"><span>💰 INGRESOS</span><span id="total-ing-semana" style="color:var(--verde);">S/. 0.00</span></div>
         </div>
-        <button onclick="generarReciboCanvas('semanal')" class="btn-wa" style="margin:12px 0 0;">🖼️ Compartir como Imagen</button>
+        <button onclick="generarReciboCanvas('semanal')" class="btn-wa" style="margin:12px 0 0;">📲 Compartir por WhatsApp</button>
         <button onclick="cerrarModalesYModos()" class="btn-modal-secondary">Cerrar</button>
     </div>
 </div>
@@ -2113,13 +2036,6 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
             ini.setHours(0,0,0,0); let fin = new Date(ini); fin.setDate(ini.getDate() + 6); fin.setHours(23,59,59,999);
             return { inicio: ini, fin: fin, texto: `${ini.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})} - ${fin.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})}` };
         }
-        function compartirWhatsApp() { 
-            let val = modoPrivado ? "••••" : `S/. ${saldoActualGlobal.toFixed(2)}`;
-            let rKM = document.getElementById('res-sol-km').innerText;
-            let rHR = document.getElementById('res-sol-hr').innerText;
-            let txt = `🚕 *REPORTE GESTOR TAXI*\n💰 *BALANCE:* ${val}\n📈 *ING:* ${document.getElementById('txt-total-ing').innerText}\n📉 *GAS:* ${document.getElementById('txt-total-gas').innerText}\n\n📊 *RENDIMIENTO:*\n🛣️ *KM:* ${rKM}\n⏱️ *HR:* ${rHR}`; 
-            window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank'); 
-        }
 
         // ===== CONFIRMAR CICLO Y RESUMEN SEMANAL =====
         let ciclosSemanales = JSON.parse(localStorage.getItem('gt_ciclos_v1')) || {};
@@ -2239,7 +2155,25 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
         }
 
 
-        function construirHTMLReporte() {
+
+
+
+
+        function generarReciboCanvas(tipo) {
+            // Alias para compatibilidad
+            if (tipo === 'semanal') compartirResumenWhatsApp();
+            else compartirWhatsApp();
+        }
+        // ===== FIN COMPARTIR WHATSAPP =====
+</script>
+</body>
+</html        // ===== COMPARTIR WHATSAPP (texto) =====
+
+        // ===== FIN COMPARTIR WHATSAPP =====
+</script>
+</body>
+</html        // ===== COMPARTIR POR WHATSAPP (texto) =====
+        function compartirWhatsApp() {
             const periodoTexto = periodoActual === 'dia'
                 ? document.getElementById('input-fecha-filtro').value
                 : periodoActual === 'semana' ? document.getElementById('txt-semana').innerText
@@ -2247,169 +2181,95 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
                 : document.getElementById('txt-anio').innerText;
             const tI = document.getElementById('txt-total-ing').innerText;
             const tG = document.getElementById('txt-total-gas').innerText;
-            const bal = `S/. ${saldoActualGlobal.toFixed(2)}`;
-            const balColor = saldoActualGlobal >= 0 ? '#22c55e' : '#ef4444';
+            const bal = modoPrivado ? '••••' : `S/. ${saldoActualGlobal.toFixed(2)}`;
             const rKm = document.getElementById('res-sol-km').innerText;
             const rHr = document.getElementById('res-sol-hr').innerText;
             const rango = document.getElementById('res-rango-horas').innerText;
-            const fecha = new Date().toLocaleDateString('es-PE', {day:'2-digit',month:'short',year:'numeric'});
-            return `
-            <div class="recibo-header">
-                <div class="recibo-brand">GT PUREQ Pro</div>
-                <div class="recibo-sub">Gestor Taxi &middot; ${fecha}</div>
-            </div>
-            <div class="recibo-body">
-                <div class="recibo-label">PERIODO</div>
-                <div class="recibo-value">${periodoTexto}</div>
-                <div class="recibo-sep"></div>
-                <div class="recibo-card">
-                    <div><div class="recibo-card-label">INGRESOS</div><div class="recibo-card-value" style="color:#22c55e;">${tI}</div></div>
-                </div>
-                <div class="recibo-card">
-                    <div><div class="recibo-card-label">GASTOS</div><div class="recibo-card-value" style="color:#ef4444;">${tG}</div></div>
-                </div>
-                <div class="recibo-balance">
-                    <div class="recibo-balance-label">BALANCE NETO</div>
-                    <div class="recibo-balance-value" style="color:${balColor};">${bal}</div>
-                </div>
-                <div class="recibo-sep"></div>
-                <div class="recibo-label">RENDIMIENTO</div>
-                <div class="recibo-grid" style="margin-top:8px;">
-                    <div class="recibo-grid-item">
-                        <div class="recibo-grid-label">S/. por KM</div>
-                        <div class="recibo-grid-value">${rKm}</div>
-                    </div>
-                    <div class="recibo-grid-item">
-                        <div class="recibo-grid-label">S/. por Hora</div>
-                        <div class="recibo-grid-value">${rHr}</div>
-                        ${rango ? `<div class="recibo-rango">${rango}</div>` : ''}
-                    </div>
-                </div>
-            </div>
-            <div class="recibo-footer">GT PUREQ Pro &middot; ${new Date().toLocaleString('es-PE')}</div>`;
+            const fecha = new Date().toLocaleDateString('es-PE');
+
+            let txt = `🚕 *GT PUREQ Pro*
+`;
+            txt += `📅 *Período:* ${periodoTexto}
+`;
+            txt += `📆 *Generado:* ${fecha}
+`;
+            txt += `─────────────────
+`;
+            txt += `📈 *INGRESOS:* ${tI}
+`;
+            txt += `📉 *GASTOS:* ${tG}
+`;
+            txt += `💰 *BALANCE NETO:* ${bal}
+`;
+            txt += `─────────────────
+`;
+            txt += `📊 *RENDIMIENTO:*
+`;
+            txt += `🛣️ S/. por KM: ${rKm}
+`;
+            txt += `⏱️ S/. por Hora: ${rHr}
+`;
+            if (rango) txt += `🕐 ${rango}
+`;
+            txt += `─────────────────
+`;
+            txt += `_GT PUREQ Pro · Gestor Taxi_`;
+
+            window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
         }
 
-        function construirHTMLSemanal() {
+        function compartirResumenWhatsApp() {
             const hoy = new Date();
             const lunes = getInicioSemana(hoy);
             const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
             const fmt = d => d.toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
-            const dias = ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
+            const dias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
             const hoyStr = hoy.toLocaleDateString('en-CA');
-            let totalKm = 0, totalIng = 0, filasHTML = '';
+            let totalKm = 0, totalIng = 0;
+            let lineas = '';
 
             for (let i = 0; i < 7; i++) {
                 const fechaDia = new Date(lunes);
                 fechaDia.setDate(lunes.getDate() + i);
                 const fechaStr = fechaDia.toLocaleDateString('en-CA');
-                const esHoy = fechaStr === hoyStr;
-
-                // Usar ciclosSemanales (mismo dato que abrirResumenSemanal)
                 const ciclo = ciclosSemanales ? ciclosSemanales[fechaStr] : null;
                 let kmDia = ciclo ? (ciclo.kmTotal || 0) : 0;
                 let ingDia = ciclo ? (ciclo.ingresos || 0) : 0;
-
-                // Si es hoy y no hay ciclo confirmado, calcular en tiempo real
-                if (esHoy && !ciclo) {
+                if (fechaStr === hoyStr && !ciclo) {
                     ingDia = movs.filter(m => m.tipo==='ingreso' && new Date(m.fecha).toLocaleDateString('en-CA')===hoyStr).reduce((a,b)=>a+b.mon,0);
-                    const elTotal = document.getElementById('total-recorrido');
-                    kmDia = elTotal ? (parseFloat(elTotal.innerText) || 0) : 0;
                 }
-
                 totalKm += kmDia; totalIng += ingDia;
-                const claseExtra = esHoy ? 'hoy' : (kmDia > 0 || ingDia > 0) ? 'confirmado' : '';
-                const contenido = (kmDia > 0 || ingDia > 0)
-                    ? `<div class="recibo-semana-km">${kmDia.toFixed(1)} KM</div><div class="recibo-semana-ing">S/. ${ingDia.toFixed(2)}</div>`
-                    : `<div class="recibo-semana-vacio">sin registro</div>`;
-                filasHTML += `<div class="recibo-semana-row ${claseExtra}"><div><div class="recibo-semana-dia">${dias[i]}</div><div class="recibo-semana-fecha">${fechaDia.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})}</div></div><div style="text-align:right;">${contenido}</div></div>`;
+                const icono = kmDia > 0 || ingDia > 0 ? '✅' : '⬜';
+                lineas += `${icono} *${dias[i]}* ${fechaDia.toLocaleDateString('es-PE',{day:'2-digit',month:'short'})}: 🛣️ ${kmDia.toFixed(0)} KM | 💰 S/. ${ingDia.toFixed(2)}
+`;
             }
 
-            const fecha = new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'short',year:'numeric'});
-            return `
-            <div class="recibo-header">
-                <div class="recibo-brand">GT PUREQ Pro</div>
-                <div class="recibo-sub">Resumen Semanal &middot; ${fecha}</div>
-            </div>
-            <div class="recibo-body">
-                <div class="recibo-label">SEMANA</div>
-                <div class="recibo-value">${fmt(lunes)} - ${fmt(domingo)}</div>
-                <div class="recibo-sep"></div>
-                ${filasHTML}
-                <div class="recibo-totales">
-                    <div class="recibo-total-row"><span style="color:#f1f5f9;">TOTAL KM</span><span style="color:#3b82f6;">${totalKm.toFixed(1)} KM</span></div>
-                    <div class="recibo-total-row"><span style="color:#f1f5f9;">INGRESOS</span><span style="color:#22c55e;">S/. ${totalIng.toFixed(2)}</span></div>
-                </div>
-            </div>
-            <div class="recibo-footer">GT PUREQ Pro &middot; ${new Date().toLocaleString('es-PE')}</div>`;
+            let txt = `🚕 *GT PUREQ Pro · Resumen Semanal*
+`;
+            txt += `📅 *${fmt(lunes)} — ${fmt(domingo)}*
+`;
+            txt += `─────────────────
+`;
+            txt += lineas;
+            txt += `─────────────────
+`;
+            txt += `🛣️ *TOTAL KM:* ${totalKm.toFixed(0)} KM
+`;
+            txt += `💰 *INGRESOS:* S/. ${totalIng.toFixed(2)}
+`;
+            txt += `─────────────────
+`;
+            txt += `_GT PUREQ Pro · Gestor Taxi_`;
+
+            window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
         }
 
         function generarReciboCanvas(tipo) {
-            // Cerrar cualquier modal abierto antes de mostrar el recibo
-            document.querySelectorAll('.modal').forEach(m => {
-                if (m.id !== 'modal-recibo') m.style.display = 'none';
-            });
-            pushEstado();
-            reciboImagenDataUrl = null;
-            document.getElementById('modal-recibo').style.display = 'flex';
-            document.getElementById('recibo-img-preview').style.display = 'none';
-            document.getElementById('recibo-loading').style.display = 'block';
-            document.getElementById('recibo-loading').innerText = 'Generando recibo...';
-            document.getElementById('btn-compartir-recibo').style.display = 'none';
-            document.getElementById('btn-descargar-recibo').style.display = 'none';
-
-            const wrap = document.getElementById('recibo-exportable');
-            wrap.innerHTML = tipo === 'semanal' ? construirHTMLSemanal() : construirHTMLReporte();
-
-            setTimeout(() => {
-                if (typeof html2canvas === 'undefined') {
-                    document.getElementById('recibo-loading').innerText = 'Cargando... intenta de nuevo en 3 segundos';
-                    setTimeout(() => generarReciboCanvas(tipo), 3000);
-                    return;
-                }
-                html2canvas(wrap, {
-                    backgroundColor: '#0f172a', scale: 2,
-                    useCORS: true, logging: false, width: 360, windowWidth: 360
-                }).then(canvas => {
-                    reciboImagenDataUrl = canvas.toDataURL('image/png');
-                    const img = document.getElementById('recibo-img-preview');
-                    img.src = reciboImagenDataUrl;
-                    img.style.display = 'block';
-                    document.getElementById('recibo-loading').style.display = 'none';
-                    document.getElementById('btn-compartir-recibo').style.display = 'block';
-                    document.getElementById('btn-descargar-recibo').style.display = 'block';
-                }).catch(err => {
-                    document.getElementById('recibo-loading').innerText = 'Error al generar imagen. Usa Guardar imagen.';
-                    document.getElementById('btn-descargar-recibo').style.display = 'block';
-                    console.error(err);
-                });
-            }, 300);
+            // Alias para compatibilidad
+            if (tipo === 'semanal') compartirResumenWhatsApp();
+            else compartirWhatsApp();
         }
-
-        async function compartirReciboWhatsApp() {
-            if (!reciboImagenDataUrl) return;
-            try {
-                const res = await fetch(reciboImagenDataUrl);
-                const blob = await res.blob();
-                const file = new File([blob], 'recibo-gt-pureq.png', {type:'image/png'});
-                if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
-                    await navigator.share({files:[file], title:'Reporte GT PUREQ Pro'});
-                } else {
-                    descargarRecibo();
-                    alert('Imagen guardada. Enviala manualmente por WhatsApp.');
-                }
-            } catch(e) { descargarRecibo(); }
-        }
-
-        function descargarRecibo() {
-            if (!reciboImagenDataUrl) return;
-            const a = document.createElement('a');
-            a.download = 'recibo-gt-' + new Date().toLocaleDateString('en-CA') + '.png';
-            a.href = reciboImagenDataUrl; a.click();
-        }
-
-        function compartirWhatsApp() { generarReciboCanvas('reporte'); }
-        function compartirResumenWhatsApp() { generarReciboCanvas('semanal'); }
-        // ===== FIN COMPARTIR COMO IMAGEN =====
+        // ===== FIN COMPARTIR WHATSAPP =====
 </script>
 </body>
 </html>
