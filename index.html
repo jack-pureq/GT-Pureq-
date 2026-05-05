@@ -776,7 +776,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
         <div class="mov-list" id="lista"></div>
 
         <!-- WhatsApp -->
-        <button class="btn-wa" onclick="generarReciboCanvas('reporte')">📲 Compartir por WhatsApp</button>
+        <button class="btn-wa" onclick="compartirWhatsApp()">📲 Compartir por WhatsApp</button>
     </div>
 </div>
 
@@ -1126,7 +1126,7 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
             <div class="t-row"><span>🛣️ TOTAL KM</span><span id="total-km-semana" style="color:var(--azul);">0.0 KM</span></div>
             <div class="t-row"><span>💰 INGRESOS</span><span id="total-ing-semana" style="color:var(--verde);">S/. 0.00</span></div>
         </div>
-        <button onclick="generarReciboCanvas('semanal')" class="btn-wa" style="margin:12px 0 0;">📲 Compartir por WhatsApp</button>
+        <button onclick="compartirResumenWhatsApp()" class="btn-wa" style="margin:12px 0 0;">📲 Compartir por WhatsApp</button>
         <button onclick="cerrarModalesYModos()" class="btn-modal-secondary">Cerrar</button>
     </div>
 </div>
@@ -2159,11 +2159,6 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
 
 
 
-        function generarReciboCanvas(tipo) {
-            // Alias para compatibilidad
-            if (tipo === 'semanal') compartirResumenWhatsApp();
-            else compartirWhatsApp();
-        }
         // ===== FIN COMPARTIR WHATSAPP =====
 </script>
 </body>
@@ -2264,11 +2259,6 @@ html, body { overflow: hidden; height: 100%; width: 100%; position: fixed; font-
             window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
         }
 
-        function generarReciboCanvas(tipo) {
-            // Alias para compatibilidad
-            if (tipo === 'semanal') compartirResumenWhatsApp();
-            else compartirWhatsApp();
-        }
         // ===== FIN COMPARTIR WHATSAPP =====
 </script>
 </body>
