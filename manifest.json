@@ -1,26 +1,10 @@
-
 {
-  "name": "GT PUREQ Pro",
-  "short_name": "GT PUREQ",
-  "start_url": "/index,html/",
-  "scope": "/GT- Pureq/",
-  "display": "standalone",
-  "background_color": "#2c3e50",
-  "theme_color": "#3498db",
-  "description": "Gestor de ingresos y gastos para taxistas",
-  "orientation": "portrait",
+  "name": "GT-Pureq",
   "icons": [
     {
-      "src": "https://jack-pureq.github.io/mis-gastos/logo_gt.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "logo_gt",
+      "src": "logo_192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     }
   ]
 }
