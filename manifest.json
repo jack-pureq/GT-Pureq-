@@ -1,9 +1,14 @@
 {
-  "name": "GT-Pureq",
+  "name": "GT Pureq",
+  "short_name": "GT PUREQ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212",
   "icons": [
     {
-      "src": "logo_192.png",
-      "sizes": "192x192",
+      "src": "logo_192",
+      "sizes": "260x260",
       "type": "image/png"
     }
   ]
