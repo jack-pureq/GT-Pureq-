@@ -17,7 +17,7 @@
       "purpose": "maskable"
     },
     {
-      "src": "https://jack-pureq.github.io/mis-gastos/logo_gt.png",
+      "src": "logo_gt",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
