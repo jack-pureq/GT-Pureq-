@@ -58,7 +58,7 @@ transition: transform 0.35s cubic-bezier(.4,0,.2,1);
 overflow: hidden; z-index: 1;
 }
 .page.hidden { transform: translateX(100%); pointer-events: none; }
-#page-reportes, #page-perfil, #page-costos { z-index: 10; }
+#page-reportes, #page-perfil, #page-costos, #page-mant { z-index: 10; }
 .page-scroll { flex: 1; overflow-y: auto; padding: 0 15px 20px; -webkit-overflow-scrolling: touch; }
 .page-scroll::-webkit-scrollbar { display: none; }
 /* ===== TOP BAR ===== */
@@ -527,6 +527,89 @@ border-radius: var(--radius-sm); padding: 14px; margin-top: 8px;
 .cobro-neto-value { font-size: 32px; font-weight: 900; color: var(--verde); margin-top: 4px; }
 /* ===== FIN MODAL COBRO MIXTO ===== */
 
+/* ===== CONTROL MANTENIMIENTO ===== */
+#page-mant { background: var(--bg); }
+.mant-status-card {
+    margin: 0 15px 10px;
+    border-radius: var(--radius); padding: 14px 16px;
+    border: 1px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: all 0.2s;
+}
+.mant-status-card:active { transform: scale(0.98); }
+.mant-status-icon { font-size: 28px; flex-shrink: 0; }
+.mant-status-info { flex: 1; min-width: 0; }
+.mant-status-title { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mant-status-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.mant-badge {
+    padding: 4px 10px; border-radius: 99px;
+    font-size: 11px; font-weight: 800; color: white; flex-shrink: 0;
+}
+.badge-ok { background: var(--verde); }
+.badge-warn { background: var(--naranja); }
+.badge-danger { background: var(--rojo); }
+
+.mant-form-section {
+    margin: 0 15px 10px;
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden;
+}
+.mant-form-header {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+}
+.mant-form-header h4 { font-size: 14px; font-weight: 800; color: var(--text); }
+.mant-form-body { padding: 14px 16px; display: none; }
+.mant-form-body.open { display: block; }
+
+.mant-field-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 0.5px; margin-bottom: 5px; display: block; }
+.mant-input {
+    width: 100%; padding: 11px 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--bg2);
+    color: var(--text); font-size: 14px; font-weight: 600; outline: none;
+    margin-bottom: 10px; transition: border-color 0.2s;
+}
+.mant-input:focus { border-color: var(--azul); }
+.mant-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mant-search {
+    width: 100%; padding: 10px 14px 10px 36px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--bg2);
+    color: var(--text); font-size: 13px; outline: none; margin-bottom: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 12px center;
+}
+.mant-photo-preview { max-width: 100%; max-height: 160px; border-radius: var(--radius-sm); object-fit: cover; margin-top: 8px; display: none; }
+.mant-record-card {
+    background: var(--bg2); border-radius: var(--radius-sm);
+    padding: 13px 14px; margin-bottom: 8px;
+    border: 1px solid var(--border); border-left: 4px solid var(--azul);
+    position: relative;
+}
+.mant-record-card.warn { border-left-color: var(--naranja); }
+.mant-record-card.danger { border-left-color: var(--rojo); }
+.mant-record-badge {
+    position: absolute; top: 12px; right: 12px;
+    padding: 3px 8px; border-radius: 99px;
+    font-size: 10px; font-weight: 800; color: white;
+}
+.mant-record-title { font-size: 14px; font-weight: 800; color: var(--text); padding-right: 80px; }
+.mant-record-type { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.mant-record-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+.mant-record-item { font-size: 12px; color: var(--text2); }
+.mant-record-item strong { color: var(--text); }
+.mant-record-notes { grid-column: span 2; background: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 12px; color: var(--text2); margin-top: 4px; }
+.mant-record-photo-wrap { grid-column: span 2; margin-top: 8px; }
+.mant-record-photo-wrap img { max-width: 100%; max-height: 180px; border-radius: 8px; object-fit: contain; cursor: pointer; }
+.btn-mant-save {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    border: none; background: linear-gradient(135deg, var(--azul), #2563eb);
+    color: white; font-weight: 800; font-size: 15px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3); margin-top: 4px;
+}
+.btn-mant-del { background: none; border: none; color: var(--rojo); font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 0; margin-top: 8px; }
+/* ===== FIN CONTROL MANTENIMIENTO ===== */
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 360px) {
 .balance-amount { font-size: 32px; }
@@ -623,6 +706,7 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <button class="btn-icon" id="btn-idioma" onclick="toggleIdioma()">🌐 <span id="lbl-idioma">EN</span></button>
 <button class="btn-icon" id="btn-tema" onclick="toggleTema()">🌙 <span id="lbl-tema">Dark</span></button>
 <button class="btn-icon" onclick="irACostos(true)">📊 <span>Costos</span></button>
+            <button class="btn-icon" onclick="irAMant(true)">🔧 <span>Mant.</span></button>
 <button class="btn-icon" onclick="irAPerfil(true)">👤 <span data-i="perfil">Perfil</span></button>
 </div>
 </div>
@@ -985,6 +1069,101 @@ Total Recorrido: <span id="total-recorrido">0.00 KM</span>
 </div>
 </div>
 <!-- ===== MODALS ===== -->
+<!-- ===== PAGE MANTENIMIENTO ===== -->
+<div id="page-mant" class="page hidden">
+    <div class="page-header">
+        <button class="btn-back" onclick="irAMant(false)">←</button>
+        <div class="page-title">🔧 Mantenimiento</div>
+    </div>
+    <div style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:24px;">
+
+        <!-- Alertas activas -->
+        <div style="padding:0 15px 8px;">
+            <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px; margin-bottom:8px;">ALERTAS ACTIVAS</div>
+            <div id="mant-alertas-lista">
+                <div style="text-align:center; color:var(--text3); font-size:13px; padding:16px;">Sin registros aún</div>
+            </div>
+        </div>
+
+        <!-- Formulario nuevo registro -->
+        <div class="mant-form-section">
+            <div class="mant-form-header" onclick="toggleMantForm()">
+                <h4>➕ Nuevo Registro</h4>
+                <span id="mant-form-arrow" style="color:var(--text3); font-size:18px;">▼</span>
+            </div>
+            <div class="mant-form-body" id="mant-form-body">
+                <!-- Categoría con buscador -->
+                <label class="mant-field-label">COMPONENTE / CATEGORÍA</label>
+                <input type="text" class="mant-search" id="mant-cat-search" placeholder="Buscar categoría..." oninput="filtrarCatsMant(this.value)">
+                <select id="mant-category" class="mant-input" onchange="onMantCatChange()"></select>
+                <div id="mant-new-cat-row" style="display:none; margin-bottom:10px;">
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="mant-new-cat-input" class="mant-input" placeholder="Nueva categoría" style="margin:0; flex:1;">
+                        <button onclick="guardarNuevaCatMant()" style="padding:11px 14px; border:none; border-radius:var(--radius-sm); background:var(--verde); color:white; font-weight:700; cursor:pointer; flex-shrink:0;">+ Agregar</button>
+                    </div>
+                </div>
+
+                <div class="mant-grid2">
+                    <div>
+                        <label class="mant-field-label">FECHA REALIZADO</label>
+                        <input type="date" id="mant-fecha" class="mant-input">
+                    </div>
+                    <div>
+                        <label class="mant-field-label">KM ACTUAL</label>
+                        <input type="number" id="mant-km" class="mant-input" placeholder="Ej: 45000">
+                    </div>
+                </div>
+
+                <div class="mant-grid2">
+                    <div>
+                        <label class="mant-field-label">TIPO</label>
+                        <select id="mant-tipo" class="mant-input">
+                            <option value="Preventivo">Preventivo</option>
+                            <option value="Correctivo">Correctivo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mant-field-label">ALERTA (MESES)</label>
+                        <input type="number" id="mant-meses" class="mant-input" placeholder="Ej: 6" min="1">
+                    </div>
+                </div>
+
+                <div class="mant-grid2">
+                    <div>
+                        <label class="mant-field-label">COSTO REPUESTOS S/.</label>
+                        <input type="number" id="mant-costo-rep" class="mant-input" placeholder="0.00" value="0" step="0.01">
+                    </div>
+                    <div>
+                        <label class="mant-field-label">MANO DE OBRA S/.</label>
+                        <input type="number" id="mant-costo-mdo" class="mant-input" placeholder="0.00" value="0" step="0.01">
+                    </div>
+                </div>
+
+                <label class="mant-field-label">TALLER / LUGAR</label>
+                <input type="text" id="mant-lugar" class="mant-input" placeholder="Ej: Taller propio, Lubricentro...">
+
+                <label class="mant-field-label">NOTAS ADICIONALES</label>
+                <textarea id="mant-notas" class="mant-input" rows="3" placeholder="Repuestos usados, marcas, detalles..." style="resize:none;"></textarea>
+
+                <label class="mant-field-label">📷 FOTO / EVIDENCIA</label>
+                <input type="file" id="mant-foto-input" accept="image/*" capture="environment" style="display:none;" onchange="onMantFotoChange(this)">
+                <button onclick="document.getElementById('mant-foto-input').click()" style="width:100%; padding:11px; border-radius:var(--radius-sm); border:1.5px dashed var(--border); background:var(--bg2); color:var(--text3); font-size:13px; font-weight:600; cursor:pointer; margin-bottom:8px;">📷 Seleccionar foto</button>
+                <img id="mant-foto-preview" class="mant-photo-preview">
+
+                <button class="btn-mant-save" onclick="guardarMant()">💾 GUARDAR REGISTRO</button>
+            </div>
+        </div>
+
+        <!-- Historial completo -->
+        <div style="padding:8px 15px 0;">
+            <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px; margin-bottom:8px;">HISTORIAL COMPLETO</div>
+            <div id="mant-historial-lista">
+                <div style="text-align:center; color:var(--text3); font-size:13px; padding:16px;">Sin registros</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL COBRO MIXTO -->
 <div id="modal-cobro" class="modal center-modal">
     <div class="modal-sheet center" style="padding:20px; max-height:90vh; overflow-y:auto;">
@@ -1320,7 +1499,7 @@ document.getElementById('btn-tema').classList.remove('active-dark');
 }
 }
 // ===== FIN IDIOMA Y TEMA =====
-window.onpopstate = function() { cerrarModalesYModos(); document.getElementById('page-reportes').classList.add('hidden'); document.getElementById('page-perfil').classList.add('hidden'); document.getElementById('page-costos').classList.add('hidden'); };
+window.onpopstate = function() { cerrarModalesYModos(); document.getElementById('page-reportes').classList.add('hidden'); document.getElementById('page-perfil').classList.add('hidden'); document.getElementById('page-costos').classList.add('hidden'); document.getElementById('page-mant').classList.add('hidden'); };
 function pushEstado() { history.pushState({view: 'subpage'}, ""); }
 function inicializar() {
 document.getElementById('input-fecha-filtro').value = new Date().toLocaleDateString('en-CA');
@@ -1960,6 +2139,250 @@ document.getElementById('tabla-historial-servicios').innerHTML = html;
 document.getElementById('modal-historial-servicios').style.display = 'flex';
 }
 // ===== FIN COMBUSTIBLE =====
+// ===== CONTROL DE MANTENIMIENTO =====
+const mantCatsDefault = [
+    { name: "Aceite con filtro", icon: "🛢️", months: 6, km: 5000 },
+    { name: "Mantenimiento periódico", icon: "🔧", months: 12, km: 10000 },
+    { name: "Cambio de llantas", icon: "🔄", months: 6, km: 10000 },
+    { name: "Filtro de cabina (AC)", icon: "❄️", months: 12, km: 15000 },
+    { name: "Filtro de aire del motor", icon: "💨", months: 12, km: 15000 },
+    { name: "Líquido de frenos", icon: "🔴", months: 24, km: 40000 },
+    { name: "Bujías", icon: "⚡", months: 18, km: 30000 },
+    { name: "Aceite de transmisión", icon: "⚙️", months: 36, km: 60000 },
+    { name: "Filtro de combustible", icon: "⛽", months: 12, km: 20000 },
+    { name: "Refrigerante / Anticongelante", icon: "🌡️", months: 24, km: 40000 },
+    { name: "Correa de distribución", icon: "🔗", months: 60, km: 80000 },
+    { name: "Correa de accesorios", icon: "🔗", months: 36, km: 50000 },
+    { name: "Alineación y balanceo", icon: "⚖️", months: 6, km: 10000 },
+    { name: "Dirección asistida", icon: "🚗", months: 24, km: 40000 },
+    { name: "Limpiaparabrisas", icon: "🌧️", months: 12, km: 20000 },
+    { name: "Batería y alternador", icon: "🔋", months: 24, km: 40000 },
+    { name: "Discos y pastillas de freno", icon: "🛑", months: 12, km: 25000 },
+    { name: "Amortiguadores", icon: "🔩", months: 24, km: 60000 },
+    { name: "Motor (Diagnóstico)", icon: "🔍", months: 12, km: 20000 },
+    { name: "SOAT / Seguro", icon: "📄", months: 12, km: 0 },
+    { name: "Revisión técnica", icon: "✅", months: 12, km: 0 },
+    { name: "Impuesto vehicular", icon: "🏛️", months: 12, km: 0 },
+    { name: "Pintura / Carrocería", icon: "🎨", months: 12, km: 0 },
+    { name: "Otro servicio", icon: "🔨", months: 6, km: 0 }
+];
+
+let mantCustomCats = JSON.parse(localStorage.getItem('gt_mant_custom_cats')) || [];
+let mantAllCats = [...mantCatsDefault, ...mantCustomCats];
+let mantRecords = JSON.parse(localStorage.getItem('gt_mant_records')) || [];
+let mantFotoBase64 = '';
+
+function irAMant(mostrar) {
+    const p = document.getElementById('page-mant');
+    if (mostrar) {
+        pushEstado();
+        renderMantCats();
+        renderMantAlertas();
+        renderMantHistorial();
+        document.getElementById('mant-fecha').value = new Date().toISOString().split('T')[0];
+        p.classList.remove('hidden');
+    } else {
+        p.classList.add('hidden');
+    }
+}
+
+function toggleMantForm() {
+    const body = document.getElementById('mant-form-body');
+    const arrow = document.getElementById('mant-form-arrow');
+    body.classList.toggle('open');
+    arrow.innerText = body.classList.contains('open') ? '▲' : '▼';
+}
+
+function renderMantCats(filtro = '') {
+    const sel = document.getElementById('mant-category');
+    if (!sel) return;
+    sel.innerHTML = '';
+    const f = filtro.toLowerCase();
+    const filtered = f ? mantAllCats.filter(c => c.name.toLowerCase().includes(f)) : mantAllCats;
+    filtered.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        let info = `${c.icon || '🔧'} ${c.name}`;
+        if (c.months || c.km) info += ` (${c.months ? c.months+'m' : ''}${c.months && c.km ? ' / ' : ''}${c.km ? c.km.toLocaleString()+'km' : ''})`;
+        opt.textContent = info;
+        opt.dataset.months = c.months || 6;
+        sel.appendChild(opt);
+    });
+    // Opción agregar nueva
+    const optNew = document.createElement('option');
+    optNew.value = '__nueva__';
+    optNew.textContent = '+ Agregar nueva categoría';
+    sel.appendChild(optNew);
+    onMantCatChange();
+}
+
+function filtrarCatsMant(val) {
+    renderMantCats(val);
+}
+
+function onMantCatChange() {
+    const sel = document.getElementById('mant-category');
+    const newRow = document.getElementById('mant-new-cat-row');
+    const mesesInput = document.getElementById('mant-meses');
+    if (sel.value === '__nueva__') {
+        newRow.style.display = 'block';
+    } else {
+        newRow.style.display = 'none';
+        const selOpt = sel.options[sel.selectedIndex];
+        if (selOpt && selOpt.dataset.months) mesesInput.value = selOpt.dataset.months;
+    }
+}
+
+function guardarNuevaCatMant() {
+    const val = document.getElementById('mant-new-cat-input').value.trim();
+    if (val && !mantAllCats.some(c => c.name === val)) {
+        const nueva = { name: val, icon: '🔧', months: 6, km: 0 };
+        mantCustomCats.push(nueva);
+        mantAllCats = [...mantCatsDefault, ...mantCustomCats];
+        localStorage.setItem('gt_mant_custom_cats', JSON.stringify(mantCustomCats));
+        document.getElementById('mant-new-cat-input').value = '';
+        renderMantCats();
+        const sel = document.getElementById('mant-category');
+        sel.value = val;
+        document.getElementById('mant-new-cat-row').style.display = 'none';
+    }
+}
+
+function onMantFotoChange(input) {
+    const file = input.files[0];
+    if (!file) { mantFotoBase64 = ''; document.getElementById('mant-foto-preview').style.display = 'none'; return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxW = 600;
+            const scale = img.width > maxW ? maxW / img.width : 1;
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            mantFotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            const prev = document.getElementById('mant-foto-preview');
+            prev.src = mantFotoBase64;
+            prev.style.display = 'block';
+        };
+    };
+    reader.readAsDataURL(file);
+}
+
+function guardarMant() {
+    const sel = document.getElementById('mant-category');
+    if (!sel.value || sel.value === '__nueva__') { alert('Selecciona una categoría'); return; }
+    const fecha = document.getElementById('mant-fecha').value;
+    const km = document.getElementById('mant-km').value;
+    if (!fecha || !km) { alert('Completa fecha y kilometraje'); return; }
+
+    const rec = {
+        category: sel.value,
+        icon: mantAllCats.find(c => c.name === sel.value)?.icon || '🔧',
+        fecha, km: parseInt(km),
+        tipo: document.getElementById('mant-tipo').value,
+        meses: parseInt(document.getElementById('mant-meses').value) || 6,
+        costoRep: parseFloat(document.getElementById('mant-costo-rep').value) || 0,
+        costoMdo: parseFloat(document.getElementById('mant-costo-mdo').value) || 0,
+        lugar: document.getElementById('mant-lugar').value.trim(),
+        notas: document.getElementById('mant-notas').value.trim(),
+        foto: mantFotoBase64,
+        id: Date.now()
+    };
+
+    mantRecords.unshift(rec);
+    localStorage.setItem('gt_mant_records', JSON.stringify(mantRecords));
+
+    // Reset form
+    document.getElementById('mant-km').value = '';
+    document.getElementById('mant-costo-rep').value = '0';
+    document.getElementById('mant-costo-mdo').value = '0';
+    document.getElementById('mant-lugar').value = '';
+    document.getElementById('mant-notas').value = '';
+    document.getElementById('mant-foto-preview').style.display = 'none';
+    document.getElementById('mant-cat-search').value = '';
+    mantFotoBase64 = '';
+    document.getElementById('mant-fecha').value = new Date().toISOString().split('T')[0];
+    renderMantCats();
+    renderMantAlertas();
+    renderMantHistorial();
+    // Cerrar formulario
+    document.getElementById('mant-form-body').classList.remove('open');
+    document.getElementById('mant-form-arrow').innerText = '▼';
+    alert('✅ Registro guardado');
+}
+
+function getMantStatus(fechaStr, meses) {
+    const vence = new Date(fechaStr + 'T00:00:00');
+    vence.setMonth(vence.getMonth() + meses);
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const diff = Math.ceil((vence - hoy) / 86400000);
+    if (diff <= 0) return { texto: 'Vencido', clase: 'badge-danger', cardClase: 'danger', dias: diff };
+    if (diff <= 30) return { texto: `${diff}d`, clase: 'badge-warn', cardClase: 'warn', dias: diff };
+    return { texto: 'Al día', clase: 'badge-ok', cardClase: '', dias: diff };
+}
+
+function renderMantAlertas() {
+    const el = document.getElementById('mant-alertas-lista');
+    if (!el) return;
+    if (mantRecords.length === 0) { el.innerHTML = '<div style="text-align:center; color:var(--text3); font-size:13px; padding:16px;">Sin registros aún</div>'; return; }
+    // Mostrar solo registros con alerta activa o próxima
+    const alertas = mantRecords
+        .map(r => ({ ...r, st: getMantStatus(r.fecha, r.meses) }))
+        .filter(r => r.st.dias <= 60)
+        .sort((a, b) => a.st.dias - b.st.dias);
+    if (alertas.length === 0) { el.innerHTML = '<div style="background:rgba(34,197,94,0.1); border:1px solid var(--verde); border-radius:12px; padding:12px; text-align:center; color:var(--verde); font-size:13px; font-weight:700;">Todo al día ✅</div>'; return; }
+    el.innerHTML = alertas.map(r => `
+        <div class="mant-status-card">
+            <div class="mant-status-icon">${r.icon}</div>
+            <div class="mant-status-info">
+                <div class="mant-status-title">${r.category}</div>
+                <div class="mant-status-sub">${r.fecha} · ${r.km.toLocaleString()} km · S/. ${(r.costoRep+r.costoMdo).toFixed(2)}</div>
+            </div>
+            <div class="mant-badge ${r.st.clase}">${r.st.texto}</div>
+        </div>`).join('');
+}
+
+function renderMantHistorial() {
+    const el = document.getElementById('mant-historial-lista');
+    if (!el) return;
+    if (mantRecords.length === 0) { el.innerHTML = '<div style="text-align:center; color:var(--text3); font-size:13px; padding:16px;">Sin registros</div>'; return; }
+    el.innerHTML = mantRecords.map((r, i) => {
+        const st = getMantStatus(r.fecha, r.meses);
+        const total = (r.costoRep + r.costoMdo).toFixed(2);
+        const vence = new Date(r.fecha + 'T00:00:00');
+        vence.setMonth(vence.getMonth() + r.meses);
+        const venceStr = vence.toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'});
+        return `
+        <div class="mant-record-card ${st.cardClase}">
+            <span class="mant-record-badge ${st.clase}">${st.texto}</span>
+            <div class="mant-record-title">${r.icon} ${r.category}</div>
+            <div class="mant-record-type">${r.tipo}</div>
+            <div class="mant-record-grid">
+                <div class="mant-record-item">📅 <strong>${r.fecha}</strong></div>
+                <div class="mant-record-item">⏰ Vence: <strong>${venceStr}</strong></div>
+                <div class="mant-record-item">🛣️ <strong>${r.km.toLocaleString()} km</strong></div>
+                <div class="mant-record-item">💰 <strong>S/. ${total}</strong></div>
+                ${r.lugar ? `<div class="mant-record-item" style="grid-column:span 2;">📍 ${r.lugar}</div>` : ''}
+                ${r.notas ? `<div class="mant-record-notes">📝 ${r.notas}</div>` : ''}
+                ${r.foto ? `<div class="mant-record-photo-wrap"><img src="${r.foto}" onclick="window.open(this.src)" alt="evidencia"></div>` : ''}
+            </div>
+            <button class="btn-mant-del" onclick="eliminarMant(${i})">🗑️ Eliminar</button>
+        </div>`;
+    }).join('');
+}
+
+function eliminarMant(idx) {
+    if (confirm('¿Eliminar este registro?')) {
+        mantRecords.splice(idx, 1);
+        localStorage.setItem('gt_mant_records', JSON.stringify(mantRecords));
+        renderMantAlertas();
+        renderMantHistorial();
+    }
+}
+// ===== FIN CONTROL DE MANTENIMIENTO =====
 function verQRDirecto(clave) {
 const data = localStorage.getItem(clave);
 if (data) { mostrarQR(clave); }
