@@ -2034,13 +2034,16 @@ if (costoTotal <= 0) { alert('Ingresa el costo del combustible'); return; }
 let tipo = 'GLP';
 if (costoGlp > 0 && costoGas > 0) tipo = 'Dual';
 else if (costoGas > 0) tipo = 'Gasolina';
+// Calcular ingresos desde la última recarga
+const ingresosDesdeAnterior = calcularIngresosDesdeUltimaRecarga();
 const nuevo = {
 tipo,
 kmCarga, kmFin, duracion,
 costoGlp, costoGas, costo: costoTotal,
 fecha: new Date().toISOString(),
 fechaStr: new Date().toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}),
-serviciosDesdeAnterior: contarServiciosDesdeUltimaRecarga()
+serviciosDesdeAnterior: contarServiciosDesdeUltimaRecarga(),
+ingresosDesdeAnterior: ingresosDesdeAnterior
 };
 registrosCombustible.unshift(nuevo);
 const anioActual = new Date().getFullYear();
@@ -2068,6 +2071,17 @@ const totalActual = movs.filter(m => m.tipo === 'ingreso').length;
 if (!checkpoint) return totalActual;
 return totalActual - (checkpoint.totalMovs || 0);
 }
+function calcularIngresosDesdeUltimaRecarga() {
+const checkpoint = JSON.parse(localStorage.getItem('gt_checkpoint_servicios'));
+if (!checkpoint || !checkpoint.fecha) {
+    // Sin checkpoint: sumar todos los ingresos
+    return movs.filter(m => m.tipo === 'ingreso').reduce((a, b) => a + b.mon, 0);
+}
+const fechaCheckpoint = new Date(checkpoint.fecha);
+return movs
+    .filter(m => m.tipo === 'ingreso' && new Date(m.fecha) >= fechaCheckpoint)
+    .reduce((a, b) => a + b.mon, 0);
+}
 function actualizarContadorServicios() {
 const contador = contarServiciosDesdeUltimaRecarga();
 const el = document.getElementById('contador-servicios-recarga');
@@ -2081,19 +2095,26 @@ if (ultimos5.length === 0) {
 lista.innerHTML = '<p style="color:rgba(255,255,255,0.3); font-size:12px; text-align:center;">Sin registros aún</p>';
 return;
 }
-lista.innerHTML = ultimos5.map((r, i) => `
+lista.innerHTML = ultimos5.map((r, i) => {
+const ing = r.ingresosDesdeAnterior || 0;
+const ganancia = ing - r.costo;
+const gananciaColor = ganancia >= 0 ? 'var(--verde)' : 'var(--rojo)';
+const ingStr = ing > 0 ? `S/. ${ing.toFixed(2)}` : '—';
+return `
 <div class="comb-item">
 <div class="comb-item-left">
-<b>${r.tipo === 'GLP' ? '🔵' : r.tipo === 'Dual' ? '🔵🟡' : '🟡'} ${r.tipo}</b>
-<small>${r.fechaStr} · ${r.serviciosDesdeAnterior || 0} servicios</small>
+<b>${r.tipo === 'GLP' ? '🔵' : r.tipo === 'Dual' ? '🔵🟡' : '🟡'} ${r.tipo} · ${r.fechaStr}</b>
 <small>📍 ${r.kmCarga} → ${r.kmFin > 0 ? r.kmFin : '?'} · ${r.duracion > 0 ? r.duracion + ' KM' : 'pendiente'}</small>
+<small>🔧 ${r.serviciosDesdeAnterior || 0} servicios · 💰 ${ingStr}</small>
+${ing > 0 ? `<small style="color:${gananciaColor}; font-weight:700;">Neto: S/. ${ganancia.toFixed(2)} (tras combustible)</small>` : ''}
 </div>
 <div class="comb-item-right">
 <div class="cost">S/. ${r.costo.toFixed(2)}</div>
 <div class="per-km">${r.duracion > 0 ? 'S/. '+(r.costo/r.duracion).toFixed(2)+'/km' : ''}</div>
 <button onclick="eliminarCombustible(${i})" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;margin-top:4px;">🗑️</button>
 </div>
-</div>`).join('');
+</div>`;
+}).join('');
 }
 function eliminarCombustible(idx) {
 if (confirm('¿Eliminar este registro?')) {
@@ -2117,11 +2138,15 @@ registrosAnio.forEach((r, i) => {
 totalCosto += r.costo;
 totalKm += r.duracion || 0;
 totalServicios += r.serviciosDesdeAnterior || 0;
+const ing = r.ingresosDesdeAnterior || 0;
+const ganancia = ing - r.costo;
+const gColor = ganancia >= 0 ? 'var(--verde)' : 'var(--rojo)';
 html += `<div class="hist-item">
 <div class="hist-item-left">
 <b>${r.tipo === 'GLP' ? '🔵' : r.tipo === 'Dual' ? '🔵🟡' : '🟡'} ${r.tipo} — ${r.fechaStr}</b>
 <small>📍 ${r.kmCarga} → ${r.kmFin > 0 ? r.kmFin : '?'} · ${r.duracion > 0 ? r.duracion+' KM' : 'pendiente'}</small>
-<small>🔧 ${r.serviciosDesdeAnterior || 0} servicios en este tanque</small>
+<small>🔧 ${r.serviciosDesdeAnterior || 0} servicios · 💰 ${ing > 0 ? 'S/. '+ing.toFixed(2) : '—'}</small>
+${ing > 0 ? `<small style="color:${gColor}; font-weight:700; display:block;">Neto: S/. ${ganancia.toFixed(2)}</small>` : ''}
 </div>
 <div class="hist-item-right">
 <b>S/. ${r.costo.toFixed(2)}</b>
