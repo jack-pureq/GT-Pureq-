@@ -1164,75 +1164,74 @@ Total Recorrido: <span id="total-recorrido">0.00 KM</span>
     </div>
 </div>
 
-<!-- MODAL COBRO MIXTO -->
+<!-- MODAL COBRO MIXTO - COMPACTO -->
 <div id="modal-cobro" class="modal center-modal">
-    <div class="modal-sheet center" style="padding:20px; max-height:90vh; overflow-y:auto;">
+    <div class="modal-sheet center" style="padding:14px 16px 18px; max-height:98vh; overflow-y:auto;">
         <div class="modal-handle"></div>
-        <div style="font-size:17px; font-weight:800; color:var(--text); margin-bottom:4px;">💳 Registrar Cobro</div>
-        <div style="font-size:12px; color:var(--text3); margin-bottom:14px;">Detalla cómo te pagó el pasajero</div>
 
-        <!-- Monto total del viaje -->
-        <div style="background:var(--bg2); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:12px; border:1px solid var(--border);">
-            <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px; margin-bottom:6px;">PRECIO DEL VIAJE</div>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <input type="number" id="cobro-precio-viaje" class="cobro-method-input" style="width:100%; font-size:22px; text-align:center;" placeholder="0.00" oninput="calcularCobro()">
-                <span style="font-size:13px; color:var(--text3); flex-shrink:0;">S/.</span>
+        <!-- Header + Precio en una línea -->
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <div style="flex:1;">
+                <div style="font-size:14px; font-weight:800; color:var(--text);">💳 Registrar Cobro</div>
+                <div style="font-size:10px; color:var(--text3);">Solo llena lo que aplica</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; background:rgba(59,130,246,0.1); border:1.5px solid var(--azul); border-radius:10px; padding:6px 10px;">
+                <span style="font-size:12px; font-weight:700; color:var(--azul);">S/.</span>
+                <input type="number" id="cobro-precio-viaje" style="width:80px; background:none; border:none; color:var(--text); font-size:20px; font-weight:800; text-align:center; outline:none;" placeholder="0.00" oninput="calcularCobro()">
             </div>
         </div>
 
-        <!-- Descuento/Promoción -->
-        <div class="cobro-method-row" id="row-descuento" style="border-color:rgba(239,68,68,0.3);">
-            <div class="cobro-method-icon">🏷️</div>
-            <div class="cobro-method-label">Descuento / Promo</div>
-            <input type="number" id="cobro-descuento" class="cobro-method-input" placeholder="0.00" oninput="calcularCobro()" style="border-color:rgba(239,68,68,0.4);">
+        <!-- Grid 2x3: métodos de cobro -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+            <div style="background:var(--bg2); border-radius:10px; padding:8px 10px; border:1px solid var(--border);">
+                <div style="font-size:10px; color:var(--text3); margin-bottom:4px;">💵 Efectivo</div>
+                <input type="number" id="cobro-efectivo" style="width:100%; background:none; border:none; border-bottom:1.5px solid var(--border); color:var(--text); font-size:16px; font-weight:800; text-align:center; outline:none; padding-bottom:2px;" placeholder="0.00" oninput="calcularCobro()">
+            </div>
+            <div style="background:var(--bg2); border-radius:10px; padding:8px 10px; border:1px solid var(--border);">
+                <div style="font-size:10px; color:var(--text3); margin-bottom:4px;">🟣 Yape</div>
+                <input type="number" id="cobro-yape" style="width:100%; background:none; border:none; border-bottom:1.5px solid var(--border); color:var(--text); font-size:16px; font-weight:800; text-align:center; outline:none; padding-bottom:2px;" placeholder="0.00" oninput="calcularCobro()">
+            </div>
+            <div style="background:var(--bg2); border-radius:10px; padding:8px 10px; border:1px solid var(--border);">
+                <div style="font-size:10px; color:var(--text3); margin-bottom:4px;">🔵 Plin</div>
+                <input type="number" id="cobro-plin" style="width:100%; background:none; border:none; border-bottom:1.5px solid var(--border); color:var(--text); font-size:16px; font-weight:800; text-align:center; outline:none; padding-bottom:2px;" placeholder="0.00" oninput="calcularCobro()">
+            </div>
+            <div style="background:var(--bg2); border-radius:10px; padding:8px 10px; border:1px solid var(--border);">
+                <div style="font-size:10px; color:var(--text3); margin-bottom:4px;">📱 App/Tarjeta</div>
+                <input type="number" id="cobro-tarjeta" style="width:100%; background:none; border:none; border-bottom:1.5px solid var(--border); color:var(--text); font-size:16px; font-weight:800; text-align:center; outline:none; padding-bottom:2px;" placeholder="0.00" oninput="calcularCobro()">
+            </div>
         </div>
 
-        <!-- Métodos de pago recibidos -->
-        <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px; margin:12px 0 8px;">¿CÓMO TE PAGÓ?</div>
-
-        <div class="cobro-method-row">
-            <div class="cobro-method-icon">💵</div>
-            <div class="cobro-method-label">Efectivo recibido</div>
-            <input type="number" id="cobro-efectivo" class="cobro-method-input" placeholder="0.00" oninput="calcularCobro()">
-        </div>
-        <div class="cobro-method-row">
-            <div class="cobro-method-icon">🟣</div>
-            <div class="cobro-method-label">Yape recibido</div>
-            <input type="number" id="cobro-yape" class="cobro-method-input" placeholder="0.00" oninput="calcularCobro()">
-        </div>
-        <div class="cobro-method-row">
-            <div class="cobro-method-icon">🔵</div>
-            <div class="cobro-method-label">Plin recibido</div>
-            <input type="number" id="cobro-plin" class="cobro-method-input" placeholder="0.00" oninput="calcularCobro()">
-        </div>
-        <div class="cobro-method-row">
-            <div class="cobro-method-icon">💳</div>
-            <div class="cobro-method-label">Tarjeta / App</div>
-            <input type="number" id="cobro-tarjeta" class="cobro-method-input" placeholder="0.00" oninput="calcularCobro()">
+        <!-- Fila: Descuento + Vueltos -->
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
+            <div style="background:rgba(239,68,68,0.08); border-radius:10px; padding:8px 10px; border:1px solid rgba(239,68,68,0.25);">
+                <div style="font-size:9px; color:var(--rojo); font-weight:700; margin-bottom:4px;">🏷️ Descuento</div>
+                <input type="number" id="cobro-descuento" style="width:100%; background:none; border:none; border-bottom:1.5px solid rgba(239,68,68,0.4); color:var(--rojo); font-size:15px; font-weight:800; text-align:center; outline:none; padding-bottom:2px;" placeholder="0.00" oninput="calcularCobro()">
+            </div>
+            <div style="background:rgba(245,158,11,0.08); border-radius:10px; padding:8px 10px; border:1px solid rgba(245,158,11,0.25);">
+                <div style="font-size:9px; color:var(--naranja); font-weight:700; margin-bottom:4px;">↩️ Vuelto Yape</div>
+                <input type="number" id="cobro-vuelto-yape" style="width:100%; background:none; border:none; border-bottom:1.5px solid rgba(245,158,11,0.4); color:var(--naranja); font-size:15px; font-weight:800; text-align:center; outline:none; padding-bottom:2px;" placeholder="0.00" oninput="calcularCobro()">
+            </div>
+            <div style="background:rgba(245,158,11,0.08); border-radius:10px; padding:8px 10px; border:1px solid rgba(245,158,11,0.25);">
+                <div style="font-size:9px; color:var(--naranja); font-weight:700; margin-bottom:4px;">↩️ Vuelto Ef.</div>
+                <input type="number" id="cobro-vuelto-ef" style="width:100%; background:none; border:none; border-bottom:1.5px solid rgba(245,158,11,0.4); color:var(--naranja); font-size:15px; font-weight:800; text-align:center; outline:none; padding-bottom:2px;" placeholder="0.00" oninput="calcularCobro()">
+            </div>
         </div>
 
-        <!-- Vuelto dado -->
-        <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px; margin:12px 0 8px;">¿DISTE VUELTO?</div>
-        <div class="cobro-method-row" style="border-color:rgba(245,158,11,0.3);">
-            <div class="cobro-method-icon">↩️</div>
-            <div class="cobro-method-label">Vuelto por Yape</div>
-            <input type="number" id="cobro-vuelto-yape" class="cobro-method-input" placeholder="0.00" oninput="calcularCobro()" style="border-color:rgba(245,158,11,0.4);">
-        </div>
-        <div class="cobro-method-row" style="border-color:rgba(245,158,11,0.3);">
-            <div class="cobro-method-icon">↩️</div>
-            <div class="cobro-method-label">Vuelto en efectivo</div>
-            <input type="number" id="cobro-vuelto-ef" class="cobro-method-input" placeholder="0.00" oninput="calcularCobro()" style="border-color:rgba(245,158,11,0.4);">
+        <!-- Resultado compacto -->
+        <div style="background:linear-gradient(135deg,rgba(34,197,94,0.12),rgba(59,130,246,0.08)); border:1.5px solid var(--verde); border-radius:12px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <div>
+                <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px;">NETO QUE RECIBES</div>
+                <div id="cobro-desglose" style="font-size:10px; color:var(--text3); margin-top:2px; line-height:1.5;"></div>
+                <div id="cobro-alerta" style="font-size:10px; margin-top:2px; display:none;">⚠️ <span id="cobro-diff"></span></div>
+            </div>
+            <div id="cobro-neto-display" style="font-size:28px; font-weight:900; color:var(--verde);">S/. 0.00</div>
         </div>
 
-        <!-- Resumen neto -->
-        <div class="cobro-neto-card">
-            <div class="cobro-neto-label">NETO QUE RECIBISTE</div>
-            <div class="cobro-neto-value" id="cobro-neto-display">S/. 0.00</div>
-            <div id="cobro-alerta" style="font-size:11px; color:var(--rojo); margin-top:4px; display:none;">⚠️ Diferencia: <span id="cobro-diff"></span></div>
+        <!-- Botones -->
+        <div style="display:flex; gap:8px;">
+            <button onclick="saltarCobro()" style="flex:0 0 auto; padding:14px 12px; border:none; border-radius:10px; background:var(--bg3); color:var(--text2); font-weight:700; font-size:12px; cursor:pointer;">Saltar</button>
+            <button onclick="confirmarCobro()" style="flex:1; padding:14px; border:none; border-radius:10px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; font-weight:800; font-size:15px; cursor:pointer; box-shadow:0 4px 12px rgba(34,197,94,0.3);">✅ REGISTRAR INGRESO</button>
         </div>
-
-        <button onclick="confirmarCobro()" style="width:100%; padding:15px; border:none; border-radius:var(--radius-sm); background:linear-gradient(135deg,#22c55e,#16a34a); color:white; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 4px 12px rgba(34,197,94,0.3);">✅ REGISTRAR INGRESO</button>
-        <button onclick="saltarCobro()" style="width:100%; margin-top:8px; padding:12px; border:none; border-radius:var(--radius-sm); background:var(--bg3); color:var(--text2); font-weight:700; font-size:13px; cursor:pointer;">Saltar — registrar después</button>
     </div>
 </div>
 
@@ -1919,21 +1918,40 @@ function calcularCobro() {
     const vueltoYape = g('cobro-vuelto-yape');
     const vueltoEf = g('cobro-vuelto-ef');
 
-    const totalPagado = efectivo + yape + plin + tarjeta;
+    const totalRecibido = efectivo + yape + plin + tarjeta;
     const totalVuelto = vueltoYape + vueltoEf;
-    const neto = totalPagado - totalVuelto;
-    const esperado = precio - descuento;
+    const neto = totalRecibido - totalVuelto;
+    const tarifaReal = precio > 0 ? precio - descuento : neto;
 
-    document.getElementById('cobro-neto-display').innerText = `S/. ${neto.toFixed(2)}`;
+    // Actualizar neto mostrado
+    const netoEl = document.getElementById('cobro-neto-display');
+    netoEl.innerText = `S/. ${neto.toFixed(2)}`;
+    netoEl.style.color = neto > 0 ? 'var(--verde)' : 'var(--rojo)';
 
-    // Mostrar alerta si hay diferencia
-    const diff = neto - esperado;
+    // Desglose explicativo
+    let des = [];
+    if (efectivo > 0) des.push(`💵 Efectivo: S/. ${efectivo.toFixed(2)}`);
+    if (yape > 0) des.push(`🟣 Yape: S/. ${yape.toFixed(2)}`);
+    if (plin > 0) des.push(`🔵 Plin: S/. ${plin.toFixed(2)}`);
+    if (tarjeta > 0) des.push(`📱 App: S/. ${tarjeta.toFixed(2)}`);
+    if (totalVuelto > 0) des.push(`↩️ Vuelto dado: -S/. ${totalVuelto.toFixed(2)}`);
+    if (descuento > 0) des.push(`🏷️ Descuento aplicado: -S/. ${descuento.toFixed(2)}`);
+    const desEl = document.getElementById('cobro-desglose');
+    if (desEl) desEl.innerHTML = des.join('<br>');
+
+    // Alerta de diferencia
+    const diff = neto - tarifaReal;
     const alertEl = document.getElementById('cobro-alerta');
-    if (Math.abs(diff) > 0.01 && esperado > 0) {
+    if (Math.abs(diff) > 0.01 && tarifaReal > 0 && totalRecibido > 0) {
         alertEl.style.display = 'block';
         const diffEl = document.getElementById('cobro-diff');
-        diffEl.innerText = `S/. ${Math.abs(diff).toFixed(2)} ${diff > 0 ? '(cobrado de más)' : '(cobrado de menos)'}`;
-        diffEl.style.color = diff > 0 ? 'var(--verde)' : 'var(--rojo)';
+        if (diff > 0) {
+            diffEl.innerText = `Te pagaron S/. ${diff.toFixed(2)} de más`;
+            diffEl.style.color = 'var(--verde)';
+        } else {
+            diffEl.innerText = `Falta cobrar S/. ${Math.abs(diff).toFixed(2)}`;
+            diffEl.style.color = 'var(--rojo)';
+        }
     } else {
         alertEl.style.display = 'none';
     }
