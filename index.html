@@ -1959,48 +1959,92 @@ function calcularCobro() {
 
 function confirmarCobro() {
     const g = id => parseFloat(document.getElementById(id)?.value) || 0;
-    const precio = g('cobro-precio-viaje');
+    const precio    = g('cobro-precio-viaje');
     const descuento = g('cobro-descuento');
-    const efectivo = g('cobro-efectivo');
-    const yape = g('cobro-yape');
-    const plin = g('cobro-plin');
-    const tarjeta = g('cobro-tarjeta');
+    const efectivo  = g('cobro-efectivo');
+    const yape      = g('cobro-yape');
+    const plin      = g('cobro-plin');
+    const tarjeta   = g('cobro-tarjeta');
     const vueltoYape = g('cobro-vuelto-yape');
-    const vueltoEf = g('cobro-vuelto-ef');
-    const neto = (efectivo + yape + plin + tarjeta) - (vueltoYape + vueltoEf);
+    const vueltoEf   = g('cobro-vuelto-ef');
+
+    const totalRecibido = efectivo + yape + plin + tarjeta;
+    const totalVuelto   = vueltoYape + vueltoEf;
+    const neto = totalRecibido - totalVuelto;
 
     if (neto <= 0 && precio <= 0) {
         alert('Ingresa al menos el precio del viaje o el monto cobrado');
         return;
     }
 
-    const montoFinal = neto > 0 ? neto : (precio - descuento);
-
-    // Determinar método principal
-    let metodoN = 'Efectivo';
-    let detalle = [];
-    if (efectivo > 0) detalle.push(`💵 S/.${efectivo.toFixed(2)}`);
-    if (yape > 0) { detalle.push(`🟣 S/.${yape.toFixed(2)}`); if (yape >= efectivo) metodoN = 'Yape'; }
-    if (plin > 0) { detalle.push(`🔵 S/.${plin.toFixed(2)}`); if (plin >= efectivo && plin >= yape) metodoN = 'Plin'; }
-    if (tarjeta > 0) { detalle.push(`💳 S/.${tarjeta.toFixed(2)}`); }
-    if (descuento > 0) detalle.push(`🏷️ -S/.${descuento.toFixed(2)}`);
-    if (vueltoYape > 0 || vueltoEf > 0) detalle.push(`↩️ vuelto S/.${(vueltoYape+vueltoEf).toFixed(2)}`);
-
     const catObj = cats.find(c => c.id === catSeleccionada) || cats[0];
-    const ahora = new Date();
+    const kmVal  = document.getElementById('km').value || "0.00 KM";
+    const hrsVal = document.getElementById('hrs').value || "0h 0m";
+    const ahora  = new Date();
+    const horaStr = ahora.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit', hour12:false});
 
+    // ── Determinar método principal (el mayor) ──────────────────────────────
+    const montos = [
+        { n: 'Efectivo', v: efectivo },
+        { n: 'Yape',     v: yape     },
+        { n: 'Plin',     v: plin     },
+        { n: 'Tarjeta',  v: tarjeta  }
+    ];
+    const activos = montos.filter(m => m.v > 0);
+    let metodoN = 'Efectivo';
+    if (activos.length === 1) {
+        metodoN = activos[0].n;
+    } else if (activos.length > 1) {
+        metodoN = activos.reduce((a, b) => b.v > a.v ? b : a).n + ' (mixto)';
+    }
+
+    // ── Construir descripción del cobro ─────────────────────────────────────
+    let partes = [];
+    if (efectivo > 0) partes.push(`💵 S/.${efectivo.toFixed(2)}`);
+    if (yape     > 0) partes.push(`🟣 S/.${yape.toFixed(2)}`);
+    if (plin     > 0) partes.push(`🔵 S/.${plin.toFixed(2)}`);
+    if (tarjeta  > 0) partes.push(`💳 S/.${tarjeta.toFixed(2)}`);
+    if (descuento > 0) partes.push(`🏷️ -S/.${descuento.toFixed(2)}`);
+    if (totalVuelto > 0) partes.push(`↩️ -S/.${totalVuelto.toFixed(2)}`);
+    const detalle = partes.join(' | ');
+
+    // ── Monto final neto ────────────────────────────────────────────────────
+    const montoFinal = neto > 0 ? neto : Math.max(precio - descuento, 0);
+
+    // ── 1. Registrar INGRESO principal ──────────────────────────────────────
     movs.unshift({
-        mon: montoFinal,
-        tipo: 'ingreso',
-        catN: catObj.n,
-        catI: catObj.i,
-        km: document.getElementById('km').value || "0.00 KM",
-        hrs: document.getElementById('hrs').value || "0h 0m",
+        mon: montoFinal, tipo: 'ingreso',
+        catN: catObj.n, catI: catObj.i,
+        km: kmVal, hrs: hrsVal,
         metodoN: metodoN,
-        metodoDetalle: detalle.join(' + '),
-        fecha: ahora.toISOString(),
-        hora: ahora.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit', hour12:false})
+        metodoDetalle: detalle,
+        fecha: ahora.toISOString(), hora: horaStr
     });
+
+    // ── 2. Registrar VUELTO como gasto si aplica ────────────────────────────
+    if (totalVuelto > 0) {
+        const catVuelto = cats.find(c => c.n.toLowerCase().includes('vuelt')) || catObj;
+        if (vueltoYape > 0) {
+            movs.unshift({
+                mon: vueltoYape, tipo: 'gasto',
+                catN: 'Vuelto Yape', catI: '↩️',
+                km: kmVal, hrs: hrsVal,
+                metodoN: 'Yape',
+                metodoDetalle: `↩️ Vuelto dado al pasajero`,
+                fecha: new Date(ahora.getTime() + 1).toISOString(), hora: horaStr
+            });
+        }
+        if (vueltoEf > 0) {
+            movs.unshift({
+                mon: vueltoEf, tipo: 'gasto',
+                catN: 'Vuelto Efectivo', catI: '↩️',
+                km: kmVal, hrs: hrsVal,
+                metodoN: 'Efectivo',
+                metodoDetalle: `↩️ Vuelto dado al pasajero`,
+                fecha: new Date(ahora.getTime() + 2).toISOString(), hora: horaStr
+            });
+        }
+    }
 
     localStorage.setItem('movs_v15', JSON.stringify(movs));
     document.getElementById('monto').value = '';
