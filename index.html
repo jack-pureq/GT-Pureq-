@@ -830,6 +830,29 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 </div>
 </div>
 </div>
+<!-- Servicios por tipo -->
+<div id="servicios-tipo-card" style="margin:0 15px 12px; background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); padding:12px 14px; display:none;">
+    <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px; margin-bottom:10px;">🚕 SERVICIOS DEL PERIODO</div>
+    <div style="display:flex; gap:8px; justify-content:space-between;">
+        <div id="srv-normal-box" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border);">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; margin-bottom:4px;">Normal</div>
+            <div id="srv-normal-count" style="font-size:24px; font-weight:900; color:var(--text);">0</div>
+        </div>
+        <div id="srv-confort-box" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border);">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; margin-bottom:4px;">Confort</div>
+            <div id="srv-confort-count" style="font-size:24px; font-weight:900; color:var(--azul);">0</div>
+        </div>
+        <div id="srv-xl-box" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border);">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; margin-bottom:4px;">XL</div>
+            <div id="srv-xl-count" style="font-size:24px; font-weight:900; color:var(--naranja);">0</div>
+        </div>
+        <div style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1.5px solid var(--azul);">
+            <div style="font-size:10px; color:var(--azul); font-weight:700; margin-bottom:4px;">TOTAL</div>
+            <div id="srv-total-count" style="font-size:24px; font-weight:900; color:var(--azul);">0</div>
+        </div>
+    </div>
+</div>
+
 <!-- Lista movimientos -->
 <div class="mov-list" id="lista"></div>
 <!-- WhatsApp -->
@@ -1638,6 +1661,8 @@ document.getElementById('txt-mes').innerText = nombresMeses[mesFiltro] + " " + a
 document.getElementById('txt-semana').innerText = rangoSem.texto; document.getElementById('txt-anio').innerText = anioFiltro;
 let dIng = {}, dGas = {}; listaUI.innerHTML = '';
 let filteredList = [];
+let numIngreso = 0, numGasto = 0;
+let cntNormal = 0, cntConfort = 0, cntXL = 0;
 movs.forEach((m, idx) => {
 const fM = new Date(m.fecha); let inclT = false;
 if (periodoActual === 'dia') inclT = (fM.toLocaleDateString('en-CA') === fFiltro);
@@ -1648,9 +1673,16 @@ if (inclT && (filtroMetodoReporte === 'Todos' || m.metodoN === filtroMetodoRepor
 filteredList.push(m);
 const esI = m.tipo === 'ingreso';
 if (esI) dIng[m.catN] = (dIng[m.catN] || 0) + m.mon; else dGas[m.catN] = (dGas[m.catN] || 0) + m.mon;
+// Contar tipos de servicio
+if (esI) {
+    const srv = m.tipoServicio || (m.catN && m.catN.includes('[Confort]') ? 'Confort' : m.catN && m.catN.includes('[XL]') ? 'XL' : 'Normal');
+    if (srv === 'Confort') cntConfort++; else if (srv === 'XL') cntXL++; else cntNormal++;
+    numIngreso++;
+} else { numGasto++; }
+const numLabel = esI ? `#${numIngreso}` : `#${numGasto}`;
 listaUI.innerHTML += `<div class="mov-item" style="border-left-color:${esI?'var(--verde)':'var(--rojo)'}">
 <div class="mov-item-left">
-<div class="mov-item-title">${m.catI} ${m.catN}</div>
+<div class="mov-item-title"><span style="font-size:10px; color:${esI?'var(--verde)':'var(--rojo)'}; font-weight:800; margin-right:5px; opacity:0.7;">${numLabel}</span>${m.catI} ${m.catN}</div>
 <div class="mov-item-sub">${m.hora} · ${m.metodoN}</div>
 <div class="mov-item-sub" style="color:var(--azul);">📍 ${m.km} · ⏱️ ${m.hrs}</div>
 </div>
@@ -1667,6 +1699,18 @@ const tI = Object.values(dIng).reduce((a, b) => a + b, 0), tG = Object.values(dG
 saldoActualGlobal = tI - tG; mostrarSaldoUI(); actualizarBarraMeta();
 document.getElementById('txt-total-ing').innerText = `S/. ${tI.toFixed(2)}`; document.getElementById('txt-total-gas').innerText = `S/. ${tG.toFixed(2)}`;
 actualizarCharts(tI, tG, dIng, dGas);
+// Actualizar card servicios por tipo
+const totalSrv = cntNormal + cntConfort + cntXL;
+const cardSrv = document.getElementById('servicios-tipo-card');
+if (cardSrv) {
+    cardSrv.style.display = totalSrv > 0 ? 'block' : 'none';
+    document.getElementById('srv-normal-count').innerText = cntNormal;
+    document.getElementById('srv-confort-count').innerText = cntConfort;
+    document.getElementById('srv-xl-count').innerText = cntXL;
+    document.getElementById('srv-total-count').innerText = totalSrv;
+    document.getElementById('srv-confort-box').style.borderColor = cntConfort > 0 ? 'var(--azul)' : 'var(--border)';
+    document.getElementById('srv-xl-box').style.borderColor = cntXL > 0 ? 'var(--naranja)' : 'var(--border)';
+}
 calcularRendimiento(tI, filteredList);
 }
 function calcularRendimiento(totalIngresos, movimientosFiltrados) {
