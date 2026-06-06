@@ -832,21 +832,21 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 </div>
 <!-- Servicios por tipo -->
 <div id="servicios-tipo-card" style="margin:0 15px 12px; background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); padding:12px 14px; display:none;">
-    <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px; margin-bottom:10px;">🚕 SERVICIOS DEL PERIODO</div>
+    <div style="font-size:10px; font-weight:700; color:var(--text3); letter-spacing:1px; margin-bottom:10px;">🚕 SERVICIOS DEL PERIODO <span id="srv-filtro-label" style="color:var(--azul); font-size:9px;"></span></div>
     <div style="display:flex; gap:8px; justify-content:space-between;">
-        <div id="srv-normal-box" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border);">
+        <div id="srv-normal-box" onclick="filtrarPorTipoSrv('Normal')" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border); cursor:pointer; transition:all 0.15s;">
             <div style="font-size:10px; color:var(--text3); font-weight:600; margin-bottom:4px;">Normal</div>
             <div id="srv-normal-count" style="font-size:24px; font-weight:900; color:var(--text);">0</div>
         </div>
-        <div id="srv-confort-box" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border);">
+        <div id="srv-confort-box" onclick="filtrarPorTipoSrv('Confort')" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border); cursor:pointer; transition:all 0.15s;">
             <div style="font-size:10px; color:var(--text3); font-weight:600; margin-bottom:4px;">Confort</div>
             <div id="srv-confort-count" style="font-size:24px; font-weight:900; color:var(--azul);">0</div>
         </div>
-        <div id="srv-xl-box" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border);">
+        <div id="srv-xl-box" onclick="filtrarPorTipoSrv('XL')" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1px solid var(--border); cursor:pointer; transition:all 0.15s;">
             <div style="font-size:10px; color:var(--text3); font-weight:600; margin-bottom:4px;">XL</div>
             <div id="srv-xl-count" style="font-size:24px; font-weight:900; color:var(--naranja);">0</div>
         </div>
-        <div style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1.5px solid var(--azul);">
+        <div id="srv-todos-box" onclick="filtrarPorTipoSrv('Todos')" style="flex:1; background:var(--bg2); border-radius:10px; padding:10px 8px; text-align:center; border:1.5px solid var(--azul); cursor:pointer; transition:all 0.15s;">
             <div style="font-size:10px; color:var(--azul); font-weight:700; margin-bottom:4px;">TOTAL</div>
             <div id="srv-total-count" style="font-size:24px; font-weight:900; color:var(--azul);">0</div>
         </div>
@@ -1661,8 +1661,20 @@ document.getElementById('txt-mes').innerText = nombresMeses[mesFiltro] + " " + a
 document.getElementById('txt-semana').innerText = rangoSem.texto; document.getElementById('txt-anio').innerText = anioFiltro;
 let dIng = {}, dGas = {}; listaUI.innerHTML = '';
 let filteredList = [];
-let numIngreso = 0, numGasto = 0;
 let cntNormal = 0, cntConfort = 0, cntXL = 0;
+// Primero contar totales para numerar desde el primero del día
+let totalIngresosPeriodo = 0, totalGastosPeriodo = 0;
+movs.forEach((m) => {
+const fM = new Date(m.fecha); let inclT = false;
+if (periodoActual === 'dia') inclT = (fM.toLocaleDateString('en-CA') === fFiltro);
+else if (periodoActual === 'semana') inclT = (fM >= rangoSem.inicio && fM <= rangoSem.fin);
+else if (periodoActual === 'mes') inclT = (fM.getMonth() === mesFiltro && fM.getFullYear() === anioFiltro);
+else if (periodoActual === 'anio') inclT = (fM.getFullYear() === anioFiltro);
+if (inclT && (filtroMetodoReporte === 'Todos' || m.metodoN === filtroMetodoReporte)) {
+    if (m.tipo === 'ingreso') totalIngresosPeriodo++; else totalGastosPeriodo++;
+}
+});
+let numIngreso = totalIngresosPeriodo + 1, numGasto = totalGastosPeriodo + 1;
 movs.forEach((m, idx) => {
 const fM = new Date(m.fecha); let inclT = false;
 if (periodoActual === 'dia') inclT = (fM.toLocaleDateString('en-CA') === fFiltro);
@@ -1670,16 +1682,19 @@ else if (periodoActual === 'semana') inclT = (fM >= rangoSem.inicio && fM <= ran
 else if (periodoActual === 'mes') inclT = (fM.getMonth() === mesFiltro && fM.getFullYear() === anioFiltro);
 else if (periodoActual === 'anio') inclT = (fM.getFullYear() === anioFiltro);
 if (inclT && (filtroMetodoReporte === 'Todos' || m.metodoN === filtroMetodoReporte)) {
-filteredList.push(m);
 const esI = m.tipo === 'ingreso';
-if (esI) dIng[m.catN] = (dIng[m.catN] || 0) + m.mon; else dGas[m.catN] = (dGas[m.catN] || 0) + m.mon;
-// Contar tipos de servicio
+const srvTipo = m.tipoServicio || (m.catN && m.catN.includes('[Confort]') ? 'Confort' : m.catN && m.catN.includes('[XL]') ? 'XL' : 'Normal');
+// Siempre contar para los totales del card (independiente del filtro)
 if (esI) {
-    const srv = m.tipoServicio || (m.catN && m.catN.includes('[Confort]') ? 'Confort' : m.catN && m.catN.includes('[XL]') ? 'XL' : 'Normal');
-    if (srv === 'Confort') cntConfort++; else if (srv === 'XL') cntXL++; else cntNormal++;
-    numIngreso++;
-} else { numGasto++; }
+    if (srvTipo === 'Confort') cntConfort++; else if (srvTipo === 'XL') cntXL++; else cntNormal++;
+}
+// Aplicar filtro de tipo de servicio para la lista
+const pasaFiltroSrv = filtroTipoSrv === 'Todos' || !esI || srvTipo === filtroTipoSrv;
+filteredList.push(m);
+if (esI) dIng[m.catN] = (dIng[m.catN] || 0) + m.mon; else dGas[m.catN] = (dGas[m.catN] || 0) + m.mon;
+if (esI) { numIngreso--; } else { numGasto--; }
 const numLabel = esI ? `#${numIngreso}` : `#${numGasto}`;
+if (!pasaFiltroSrv) return; // Saltar de la lista pero ya contó para totales
 listaUI.innerHTML += `<div class="mov-item" style="border-left-color:${esI?'var(--verde)':'var(--rojo)'}">
 <div class="mov-item-left">
 <div class="mov-item-title"><span style="font-size:10px; color:${esI?'var(--verde)':'var(--rojo)'}; font-weight:800; margin-right:5px; opacity:0.7;">${numLabel}</span>${m.catI} ${m.catN}</div>
@@ -2576,6 +2591,26 @@ function togglePrivacidad() { modoPrivado = !modoPrivado; mostrarSaldoUI(); }
 function mostrarSaldoUI() { const elSaldo = document.getElementById('saldo-principal'), elStatus = document.getElementById('lbl-status-balance'); if (modoPrivado) { elSaldo.innerText = "S/. ••••"; elStatus.innerText = " 🔒 MODO PRIVADO"; } else { elSaldo.innerText = `S/. ${saldoActualGlobal.toFixed(2)}`; elStatus.innerText = "GESTOR TAXI JACK"; } }
 function editarMovimiento(idx) { let nV = prompt("Monto S/.", movs[idx].mon); if (nV) { movs[idx].mon = parseFloat(nV); localStorage.setItem('movs_v15', JSON.stringify(movs)); actualizarInterfaz(); } }
 function eliminarMovimiento(idx) { if (confirm("¿Eliminar?")) { movs.splice(idx, 1); localStorage.setItem('movs_v15', JSON.stringify(movs)); actualizarInterfaz(); } }
+let filtroTipoSrv = 'Todos';
+
+function filtrarPorTipoSrv(tipo) {
+    filtroTipoSrv = tipo;
+    // Resaltar botón activo
+    ['srv-normal-box','srv-confort-box','srv-xl-box','srv-todos-box'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.transform = 'scale(1)';
+        el.style.opacity = '1';
+    });
+    const mapaId = { 'Normal':'srv-normal-box', 'Confort':'srv-confort-box', 'XL':'srv-xl-box', 'Todos':'srv-todos-box' };
+    const activo = document.getElementById(mapaId[tipo]);
+    if (activo) { activo.style.transform = 'scale(1.05)'; activo.style.opacity = '1'; }
+    // Actualizar label
+    const lbl = document.getElementById('srv-filtro-label');
+    if (lbl) lbl.innerText = tipo !== 'Todos' ? `· Filtrando: ${tipo}` : '';
+    actualizarInterfaz();
+}
+
 function filtrarPorMetodo(metodo, btn) { filtroMetodoReporte = metodo; document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active')); btn.classList.add('active'); actualizarInterfaz(); }
 function setMetodo(n, i, btn) { metodoActual = { n, i }; document.querySelectorAll('#metodos-chips .chip').forEach(b => b.classList.remove('metodo-active')); btn.classList.add('metodo-active'); }
 function dibujarCats() { document.getElementById('cat-chips').innerHTML = cats.map(c => `<div class="chip ${c.id === catSeleccionada ? 'activa' : ''}" onclick="catSeleccionada=${c.id};dibujarCats();">${c.i} ${c.n}</div>`).join(''); }
@@ -2614,6 +2649,9 @@ l.innerHTML = cats.map((c, i) => `<div class="cat-manage-item">
 }
 function seleccionarEmoji(e) { emojiSeleccionado = e; document.getElementById('btn-emoji-actual').innerText = e; cerrarVariedad(); }
 function cambiarPeriodo(p, btn) {
+    filtroTipoSrv = 'Todos';
+    const lbl = document.getElementById('srv-filtro-label');
+    if (lbl) lbl.innerText = '';
 periodoActual = p; document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active');
 document.getElementById('input-fecha-filtro').style.display = (p === 'dia') ? 'block' : 'none';
 document.getElementById('visor-mes').style.display = (p === 'mes') ? 'flex' : 'none';
