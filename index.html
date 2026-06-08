@@ -1773,55 +1773,88 @@ calcularRendimiento(totalIng, filteredList);
 }
 function calcularRendimiento(totalIngresos, movimientosFiltrados) {
 let kmTotales = 0;
-let fechas = [];
-movimientosFiltrados.forEach(m => {
-if (m.tipo === 'ingreso') {
-kmTotales += parseFloat(m.km) || 0;
-}
-if (m.fecha) fechas.push(new Date(m.fecha));
-});
 let horasDecimal = 0;
 let txtHoras = '--';
 let horaInicio = null;
 let horaFin = null;
-if (fechas.length >= 1) {
-fechas.sort((a, b) => a - b);
-horaFin = fechas[fechas.length - 1];
-// Buscar hora de inicio del turno para ese día específico
-const fFiltro = document.getElementById('input-fecha-filtro').value;
-const esHoy = fFiltro === new Date().toLocaleDateString('en-CA');
-// Primero buscar hora guardada por fecha (persiste aunque finalice el turno)
-const inicioPorFecha = localStorage.getItem('gt_inicio_' + fFiltro);
-// Si es hoy y está activo, también revisar gt_inicio_turno
-const inicioActivo = esHoy ? localStorage.getItem('gt_inicio_turno') : null;
-const turnoGuardado = inicioActivo || inicioPorFecha;
-if (periodoActual === 'dia' && turnoGuardado) {
-const horaGuardada = new Date(turnoGuardado);
-// Usar solo si es anterior al primer registro (evitar hora futura)
-horaInicio = horaGuardada < fechas[0] ? horaGuardada : fechas[0];
+
+if (periodoActual === 'dia') {
+    // DÍA: usar hora exacta de inicio de turno guardada
+    const fFiltro = document.getElementById('input-fecha-filtro').value;
+    const esHoy = fFiltro === new Date().toLocaleDateString('en-CA');
+    const inicioPorFecha = localStorage.getItem('gt_inicio_' + fFiltro);
+    const inicioActivo = esHoy ? localStorage.getItem('gt_inicio_turno') : null;
+    const turnoGuardado = inicioActivo || inicioPorFecha;
+    const fechas = movimientosFiltrados.map(m => new Date(m.fecha)).sort((a,b) => a-b);
+    movimientosFiltrados.forEach(m => { if (m.tipo === 'ingreso') kmTotales += parseFloat(m.km) || 0; });
+    if (fechas.length >= 1) {
+        horaFin = fechas[fechas.length - 1];
+        if (turnoGuardado) {
+            const h = new Date(turnoGuardado);
+            horaInicio = h < fechas[0] ? h : fechas[0];
+        } else {
+            horaInicio = fechas[0];
+        }
+        const diff = horaFin - horaInicio;
+        if (diff > 0) {
+            horasDecimal = diff / 3600000;
+            const hh = Math.floor(horasDecimal), mm = Math.round((horasDecimal - hh) * 60);
+            txtHoras = `${hh}h ${mm}m`;
+        }
+    }
+    // Mostrar rango
+    const elRango = document.getElementById('res-rango-horas');
+    if (elRango && horaInicio && horaFin) {
+        const fmt = d => d.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit', hour12:false});
+        elRango.innerText = `⏱️ ${fmt(horaInicio)} → ${fmt(horaFin)} (${txtHoras})`;
+    } else if (elRango) { elRango.innerText = ''; }
+
 } else {
-horaInicio = fechas[0];
+    // SEMANA / MES / AÑO: sumar horas reales de cada día por separado
+    // Agrupar movimientos por fecha
+    const porDia = {};
+    movimientosFiltrados.forEach(m => {
+        if (m.tipo === 'ingreso') kmTotales += parseFloat(m.km) || 0;
+        if (!m.fecha) return;
+        const diaKey = new Date(m.fecha).toLocaleDateString('en-CA');
+        if (!porDia[diaKey]) porDia[diaKey] = [];
+        porDia[diaKey].push(new Date(m.fecha));
+    });
+
+    let diasTrabajados = 0;
+    Object.entries(porDia).forEach(([diaKey, fechasDia]) => {
+        fechasDia.sort((a, b) => a - b);
+        const inicioGuardado = localStorage.getItem('gt_inicio_' + diaKey);
+        let inicioDelDia = inicioGuardado ? new Date(inicioGuardado) : fechasDia[0];
+        if (inicioDelDia > fechasDia[0]) inicioDelDia = fechasDia[0];
+        const finDelDia = fechasDia[fechasDia.length - 1];
+        const diffDia = finDelDia - inicioDelDia;
+        if (diffDia > 0) {
+            horasDecimal += diffDia / 3600000;
+            diasTrabajados++;
+        }
+    });
+
+    if (horasDecimal > 0) {
+        const hhTotal = Math.floor(horasDecimal);
+        const mmTotal = Math.round((horasDecimal - hhTotal) * 60);
+        const promDia = diasTrabajados > 0 ? (horasDecimal / diasTrabajados) : 0;
+        const hhProm = Math.floor(promDia), mmProm = Math.round((promDia - hhProm) * 60);
+        txtHoras = `${hhTotal}h ${mmTotal}m total · ~${hhProm}h ${mmProm}m/día`;
+    }
+
+    const elRango = document.getElementById('res-rango-horas');
+    if (elRango) {
+        elRango.innerText = horasDecimal > 0
+            ? `⏱️ ${diasTrabajados} días · ${txtHoras}`
+            : '';
+    }
 }
-const diffMs = horaFin - horaInicio;
-if (diffMs > 0) {
-horasDecimal = diffMs / 3600000;
-const hh = Math.floor(horasDecimal);
-const mm = Math.round((horasDecimal - hh) * 60);
-txtHoras = `${hh}h ${mm}m`;
-}
-}
+
 let solKm = kmTotales > 0 ? (totalIngresos / kmTotales) : 0;
 let solHr = horasDecimal > 0 ? (totalIngresos / horasDecimal) : 0;
 document.getElementById('res-sol-km').innerText = `S/. ${solKm.toFixed(2)}`;
 document.getElementById('res-sol-hr').innerText = `S/. ${solHr.toFixed(2)}`;
-// Mostrar rango horario
-const elRango = document.getElementById('res-rango-horas');
-if (elRango && horaInicio && horaFin) {
-const fmt = d => d.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit', hour12:false});
-elRango.innerText = `⏱️ ${fmt(horaInicio)} → ${fmt(horaFin)} (${txtHoras})`;
-} else if (elRango) {
-elRango.innerText = '';
-}
 }
 // ===== GPS MEJORADO + WAKE LOCK + RECONEXIÓN =====
 let horaInicioTurno = null;
