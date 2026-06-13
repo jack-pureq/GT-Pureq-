@@ -1690,7 +1690,20 @@ let totalIng = 0, totalGas = 0;
 // UNA SOLA PASADA para todo
 movs.forEach(m => {
     if (!_incluyeEnPeriodo(m, fFiltro, rangoSem)) return;
-    if (filtroMetodoReporte !== 'Todos' && m.metodoN !== filtroMetodoReporte) return;
+    // Para cobros mixtos: verificar si el método filtrado tiene monto en ese registro
+    if (filtroMetodoReporte !== 'Todos') {
+        const esMixto = m.esMixto;
+        if (esMixto) {
+            // Verificar si tiene monto en el método filtrado
+            const tieneMetodo = (filtroMetodoReporte === 'Efectivo' && m.monEfectivo > 0) ||
+                                (filtroMetodoReporte === 'Yape' && m.monYape > 0) ||
+                                (filtroMetodoReporte === 'Plin' && m.monPlin > 0) ||
+                                (filtroMetodoReporte === 'Tarjeta' && m.monTarjeta > 0);
+            if (!tieneMetodo) return;
+        } else {
+            if (m.metodoN !== filtroMetodoReporte) return;
+        }
+    }
     filteredList.push(m);
     const esI = m.tipo === 'ingreso';
     if (esI) {
@@ -1736,7 +1749,19 @@ filteredList.forEach((m, idx) => {
 <div class="mov-item-sub" style="color:var(--azul);">📍 ${m.km} · ⏱️ ${m.hrs}</div>
 </div>
 <div class="mov-item-right">
-<div class="mov-item-amount" style="color:${esI?'var(--verde)':'var(--rojo)'}">S/.${m.mon.toFixed(2)}</div>
+<div class="mov-item-amount" style="color:${esI?'var(--verde)':'var(--rojo)'}">
+${(() => {
+    // En cobro mixto filtrado: mostrar el monto del método específico
+    if (esI && m.esMixto && filtroMetodoReporte !== 'Todos') {
+        const monFiltro = filtroMetodoReporte === 'Efectivo' ? m.monEfectivo :
+                          filtroMetodoReporte === 'Yape' ? m.monYape :
+                          filtroMetodoReporte === 'Plin' ? m.monPlin :
+                          filtroMetodoReporte === 'Tarjeta' ? m.monTarjeta : m.mon;
+        return `S/.${monFiltro.toFixed(2)}<div style="font-size:9px;color:var(--text3);font-weight:500;">de S/.${m.mon.toFixed(2)} total</div>`;
+    }
+    return `S/.${m.mon.toFixed(2)}`;
+})()}
+</div>
 <div class="mov-item-actions">
 <button class="mov-action-btn" onclick="editarMovimiento(${realIdx})">✏️</button>
 <button class="mov-action-btn" onclick="eliminarMovimiento(${realIdx})">🗑️</button>
@@ -2177,7 +2202,7 @@ function confirmarCobro() {
     // ── Monto final neto ────────────────────────────────────────────────────
     const montoFinal = neto > 0 ? neto : Math.max(precio - descuento, 0);
 
-    // ── 1. Registrar INGRESO principal ──────────────────────────────────────
+    // ── 1. Registrar INGRESO con desglose por método ─────────────────────
     movs.unshift({
         mon: montoFinal, tipo: 'ingreso',
         catN: catObj.n + etiquetaSrv, catI: catObj.i,
@@ -2185,7 +2210,13 @@ function confirmarCobro() {
         metodoN: metodoN,
         metodoDetalle: detalle + (tipoSrv !== 'Normal' ? ` | 🚕 ${tipoSrv}` : ''),
         tipoServicio: tipoSrv,
-        fecha: ahora.toISOString(), hora: horaStr
+        fecha: ahora.toISOString(), hora: horaStr,
+        // Guardar montos por método para filtrado correcto
+        monEfectivo: efectivo,
+        monYape: yape,
+        monPlin: plin,
+        monTarjeta: tarjeta,
+        esMixto: activos.length > 1
     });
 
     // ── 2. Registrar VUELTO como gasto si aplica ────────────────────────────
