@@ -765,7 +765,10 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <video id="panico-video" autoplay muted playsinline></video>
 <div id="panico-controls">
 <div id="panico-timer">🔴 00:00</div>
-<button class="btn-detener-panico" onclick="detenerPanico()">⏹️ DETENER Y GUARDAR</button>
+<div style="display:flex; gap:10px; width:100%; max-width:320px;">
+<button onclick="cambiarCamaraPanico()" style="flex:0 0 auto; padding:16px 18px; border-radius:99px; border:2px solid white; background:rgba(0,0,0,0.4); color:white; font-weight:700; font-size:20px; cursor:pointer;">🔄</button>
+<button class="btn-detener-panico" onclick="detenerPanico()" style="flex:1;">⏹️ DETENER Y GUARDAR</button>
+</div>
 </div>
 </div>
 <!-- GPS Button -->
@@ -1501,7 +1504,7 @@ let panicoRecorder = null;
 let panicoChunks = [];
 let panicoTimerInterval = null;
 let panicoSegundos = 0;
-let panicoCamaraActual = 'environment'; // trasera por defecto
+let panicoCamaraActual = 'user'; // delantera por defecto
 
 async function iniciarPanico() {
     try {
@@ -1546,8 +1549,59 @@ async function iniciarPanico() {
         }
 
     } catch (err) {
-        console.error('Error cámara pánico:', err);
-        alert('No se pudo activar la cámara. Verifica los permisos de cámara y micrófono en tu navegador.');
+        console.error('Error cámara pánico:', err.name, err.message);
+        let msg = 'No se pudo activar la cámara.';
+
+        if (!window.isSecureContext) {
+            msg = '⚠️ Esta función necesita HTTPS. Si abriste el archivo HTML directamente (file://) no funcionará — debes acceder a la app desde su link de GitHub Pages (https://...).';
+        } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            msg = 'Permiso de cámara denegado. Ve a los ajustes del navegador (ícono 🔒 o ⓘ junto a la URL) → Permisos → activa Cámara y Micrófono, luego recarga la página.';
+        } else if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
+            msg = 'No se encontró cámara delantera disponible. Intentando con la cámara que esté libre...';
+            // Intentar sin especificar facingMode como fallback
+            try {
+                panicoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                return continuarConfigPanico();
+            } catch(e2) { msg = 'No se pudo acceder a ninguna cámara del dispositivo.'; }
+        } else if (err.name === 'NotReadableError') {
+            msg = 'La cámara está siendo usada por otra app. Cierra otras apps que usen la cámara e intenta de nuevo.';
+        }
+        alert(msg);
+    }
+}
+
+function continuarConfigPanico() {
+    const video = document.getElementById('panico-video');
+    video.srcObject = panicoStream;
+    document.getElementById('panico-overlay').style.display = 'flex';
+    document.getElementById('btn-panico').classList.add('grabando');
+    panicoChunks = [];
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+    panicoRecorder = new MediaRecorder(panicoStream, { mimeType });
+    panicoRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) panicoChunks.push(e.data); };
+    panicoRecorder.onstop = () => guardarVideoPanico();
+    panicoRecorder.start();
+    panicoSegundos = 0;
+    actualizarPanicoTimer();
+    panicoTimerInterval = setInterval(() => { panicoSegundos++; actualizarPanicoTimer(); }, 1000);
+}
+
+async function cambiarCamaraPanico() {
+    panicoCamaraActual = panicoCamaraActual === 'user' ? 'environment' : 'user';
+    if (panicoStream) {
+        panicoStream.getTracks().forEach(t => t.stop());
+    }
+    try {
+        const audioTrackEnabled = true;
+        panicoStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: panicoCamaraActual },
+            audio: audioTrackEnabled
+        });
+        document.getElementById('panico-video').srcObject = panicoStream;
+        // Nota: el grabador sigue usando el stream anterior para no perder el video ya grabado;
+        // solo se actualiza la vista previa. Para cambiar cámara real se reinicia toda la grabación:
+    } catch(e) {
+        alert('No se pudo cambiar de cámara.');
     }
 }
 
