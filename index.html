@@ -610,46 +610,6 @@ border-radius: var(--radius-sm); padding: 14px; margin-top: 8px;
 .btn-mant-del { background: none; border: none; color: var(--rojo); font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 0; margin-top: 8px; }
 /* ===== FIN CONTROL MANTENIMIENTO ===== */
 
-/* ===== BOTON PANICO ===== */
-.btn-panico {
-    position: absolute; top: 16px; right: 16px;
-    width: 52px; height: 52px; border-radius: 50%;
-    background: rgba(239,68,68,0.15); border: 2px solid var(--rojo);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; cursor: pointer; z-index: 5;
-    transition: all 0.2s;
-}
-.btn-panico:active { transform: scale(0.92); }
-.btn-panico.grabando {
-    background: var(--rojo); animation: pulso-panico 1.2s infinite;
-}
-@keyframes pulso-panico {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
-    50% { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
-}
-#panico-overlay {
-    position: fixed; inset: 0; z-index: 2000;
-    background: #000; display: none;
-    flex-direction: column; align-items: center; justify-content: flex-end;
-}
-#panico-video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-#panico-controls {
-    position: relative; z-index: 1; width: 100%;
-    padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px;
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-}
-#panico-timer {
-    color: white; font-size: 28px; font-weight: 900;
-    background: rgba(239,68,68,0.85); padding: 8px 20px; border-radius: 99px;
-    display: flex; align-items: center; gap: 8px;
-}
-.btn-detener-panico {
-    width: 100%; max-width: 320px; padding: 16px; border-radius: 99px;
-    border: none; background: white; color: var(--rojo);
-    font-weight: 900; font-size: 16px; cursor: pointer;
-}
-/* ===== FIN BOTON PANICO ===== */
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 360px) {
 .balance-amount { font-size: 32px; }
@@ -753,23 +713,10 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <!-- Scroll content -->
 <div class="page-scroll">
 <!-- Balance -->
-<div class="balance-card" onclick="togglePrivacidad()" style="position:relative;">
+<div class="balance-card" onclick="togglePrivacidad()">
 <div class="balance-label" id="lbl-status-balance">BALANCE DEL DÍA</div>
 <div class="balance-amount" id="saldo-principal">S/. 0.00</div>
 <div class="balance-sub">Toca para ocultar · GT PUREQ Pro</div>
-<div class="btn-panico" id="btn-panico" onclick="event.stopPropagation(); iniciarPanico()">🆘</div>
-</div>
-
-<!-- Overlay de grabación de pánico -->
-<div id="panico-overlay">
-<video id="panico-video" autoplay muted playsinline></video>
-<div id="panico-controls">
-<div id="panico-timer">🔴 00:00</div>
-<div style="display:flex; gap:10px; width:100%; max-width:320px;">
-<button onclick="cambiarCamaraPanico()" style="flex:0 0 auto; padding:16px 18px; border-radius:99px; border:2px solid white; background:rgba(0,0,0,0.4); color:white; font-weight:700; font-size:20px; cursor:pointer;">🔄</button>
-<button class="btn-detener-panico" onclick="detenerPanico()" style="flex:1;">⏹️ DETENER Y GUARDAR</button>
-</div>
-</div>
 </div>
 <!-- GPS Button -->
 <button id="btn-gps" class="btn-turno" onclick="toggleSeguimiento()">🚀 INICIAR TURNO</button>
@@ -1498,165 +1445,6 @@ localStorage.setItem('GT_COSTO_REAL_KM', total.toFixed(3));
 guardarDatosCostos();
 }
 // ===== FIN CALCULADORA COSTOS =====
-// ===== BOTON DE PANICO =====
-let panicoStream = null;
-let panicoRecorder = null;
-let panicoChunks = [];
-let panicoTimerInterval = null;
-let panicoSegundos = 0;
-let panicoCamaraActual = 'user'; // delantera por defecto
-
-async function iniciarPanico() {
-    try {
-        // Pedir cámara trasera (la más útil para evidencia de la vía)
-        panicoStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: panicoCamaraActual },
-            audio: true
-        });
-
-        const video = document.getElementById('panico-video');
-        video.srcObject = panicoStream;
-        document.getElementById('panico-overlay').style.display = 'flex';
-        document.getElementById('btn-panico').classList.add('grabando');
-
-        // Configurar grabador
-        panicoChunks = [];
-        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-            ? 'video/webm;codecs=vp9' : 'video/webm';
-        panicoRecorder = new MediaRecorder(panicoStream, { mimeType });
-
-        panicoRecorder.ondataavailable = e => {
-            if (e.data && e.data.size > 0) panicoChunks.push(e.data);
-        };
-
-        panicoRecorder.onstop = () => {
-            guardarVideoPanico();
-        };
-
-        panicoRecorder.start();
-
-        // Timer visual
-        panicoSegundos = 0;
-        actualizarPanicoTimer();
-        panicoTimerInterval = setInterval(() => {
-            panicoSegundos++;
-            actualizarPanicoTimer();
-        }, 1000);
-
-        // Mantener pantalla encendida si es posible
-        if ('wakeLock' in navigator) {
-            try { await navigator.wakeLock.request('screen'); } catch(e) {}
-        }
-
-    } catch (err) {
-        console.error('Error cámara pánico:', err.name, err.message);
-        let msg = 'No se pudo activar la cámara.';
-
-        if (!window.isSecureContext) {
-            msg = '⚠️ Esta función necesita HTTPS. Si abriste el archivo HTML directamente (file://) no funcionará — debes acceder a la app desde su link de GitHub Pages (https://...).';
-        } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            msg = 'Permiso de cámara denegado. Ve a los ajustes del navegador (ícono 🔒 o ⓘ junto a la URL) → Permisos → activa Cámara y Micrófono, luego recarga la página.';
-        } else if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
-            msg = 'No se encontró cámara delantera disponible. Intentando con la cámara que esté libre...';
-            // Intentar sin especificar facingMode como fallback
-            try {
-                panicoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                return continuarConfigPanico();
-            } catch(e2) { msg = 'No se pudo acceder a ninguna cámara del dispositivo.'; }
-        } else if (err.name === 'NotReadableError') {
-            msg = 'La cámara está siendo usada por otra app. Cierra otras apps que usen la cámara e intenta de nuevo.';
-        }
-        alert(msg);
-    }
-}
-
-function continuarConfigPanico() {
-    const video = document.getElementById('panico-video');
-    video.srcObject = panicoStream;
-    document.getElementById('panico-overlay').style.display = 'flex';
-    document.getElementById('btn-panico').classList.add('grabando');
-    panicoChunks = [];
-    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
-    panicoRecorder = new MediaRecorder(panicoStream, { mimeType });
-    panicoRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) panicoChunks.push(e.data); };
-    panicoRecorder.onstop = () => guardarVideoPanico();
-    panicoRecorder.start();
-    panicoSegundos = 0;
-    actualizarPanicoTimer();
-    panicoTimerInterval = setInterval(() => { panicoSegundos++; actualizarPanicoTimer(); }, 1000);
-}
-
-async function cambiarCamaraPanico() {
-    panicoCamaraActual = panicoCamaraActual === 'user' ? 'environment' : 'user';
-    if (panicoStream) {
-        panicoStream.getTracks().forEach(t => t.stop());
-    }
-    try {
-        const audioTrackEnabled = true;
-        panicoStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: panicoCamaraActual },
-            audio: audioTrackEnabled
-        });
-        document.getElementById('panico-video').srcObject = panicoStream;
-        // Nota: el grabador sigue usando el stream anterior para no perder el video ya grabado;
-        // solo se actualiza la vista previa. Para cambiar cámara real se reinicia toda la grabación:
-    } catch(e) {
-        alert('No se pudo cambiar de cámara.');
-    }
-}
-
-function actualizarPanicoTimer() {
-    const m = Math.floor(panicoSegundos / 60).toString().padStart(2, '0');
-    const s = (panicoSegundos % 60).toString().padStart(2, '0');
-    const el = document.getElementById('panico-timer');
-    if (el) el.innerText = `🔴 ${m}:${s}`;
-}
-
-function detenerPanico() {
-    if (panicoRecorder && panicoRecorder.state !== 'inactive') {
-        panicoRecorder.stop();
-    }
-    if (panicoStream) {
-        panicoStream.getTracks().forEach(track => track.stop());
-        panicoStream = null;
-    }
-    if (panicoTimerInterval) {
-        clearInterval(panicoTimerInterval);
-        panicoTimerInterval = null;
-    }
-    document.getElementById('panico-overlay').style.display = 'none';
-    document.getElementById('btn-panico').classList.remove('grabando');
-}
-
-function guardarVideoPanico() {
-    if (panicoChunks.length === 0) return;
-    const blob = new Blob(panicoChunks, { type: 'video/webm' });
-    const url = URL.createObjectURL(blob);
-    const fecha = new Date();
-    const nombreArchivo = `panico_GT_${fecha.toLocaleDateString('en-CA')}_${fecha.toTimeString().slice(0,8).replace(/:/g,'-')}.webm`;
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = nombreArchivo;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    panicoChunks = [];
-
-    alert('✅ Video guardado en tu carpeta de Descargas: ' + nombreArchivo);
-}
-
-// Detectar si la app pasa a segundo plano durante grabación (la cámara se cortará)
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && panicoRecorder && panicoRecorder.state === 'recording') {
-        // El navegador pausará/cortará la grabación en background; al volver, detenemos y guardamos lo que se alcanzó a grabar
-        console.warn('App en segundo plano: la grabación de pánico puede haberse interrumpido.');
-    }
-});
-// ===== FIN BOTON DE PANICO =====
-
 // ===== IDIOMA Y TEMA =====
 let idiomaActual = localStorage.getItem('gt_idioma') || 'es';
 let temaOscuro = localStorage.getItem('gt_tema') === 'dark';
