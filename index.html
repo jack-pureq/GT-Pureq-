@@ -610,6 +610,46 @@ border-radius: var(--radius-sm); padding: 14px; margin-top: 8px;
 .btn-mant-del { background: none; border: none; color: var(--rojo); font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 0; margin-top: 8px; }
 /* ===== FIN CONTROL MANTENIMIENTO ===== */
 
+/* ===== BOTON PANICO ===== */
+.btn-panico {
+    position: relative;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(239,68,68,0.15); border: 2px solid var(--rojo);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-panico:active { transform: scale(0.92); }
+.btn-panico.grabando {
+    background: var(--rojo); animation: pulso-panico 1.2s infinite;
+}
+@keyframes pulso-panico {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
+    50% { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+}
+#panico-overlay {
+    position: fixed; inset: 0; z-index: 2000;
+    background: #000; display: none;
+    flex-direction: column; align-items: center; justify-content: flex-end;
+}
+#panico-video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+#panico-controls {
+    position: relative; z-index: 1; width: 100%;
+    padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+#panico-timer {
+    color: white; font-size: 28px; font-weight: 900;
+    background: rgba(239,68,68,0.85); padding: 8px 20px; border-radius: 99px;
+    display: flex; align-items: center; gap: 8px;
+}
+.btn-detener-panico {
+    width: 100%; max-width: 320px; padding: 16px; border-radius: 99px;
+    border: none; background: white; color: var(--rojo);
+    font-weight: 900; font-size: 16px; cursor: pointer;
+}
+/* ===== FIN BOTON PANICO ===== */
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 360px) {
 .balance-amount { font-size: 32px; }
@@ -713,10 +753,24 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <!-- Scroll content -->
 <div class="page-scroll">
 <!-- Balance -->
-<div class="balance-card" onclick="togglePrivacidad()">
+<div class="balance-card" onclick="togglePrivacidad()" style="position:relative;">
 <div class="balance-label" id="lbl-status-balance">BALANCE DEL DÍA</div>
 <div class="balance-amount" id="saldo-principal">S/. 0.00</div>
 <div class="balance-sub">Toca para ocultar · GT PUREQ Pro</div>
+<div style="position:absolute; top:16px; right:16px; display:flex; gap:8px; z-index:5;">
+<div class="btn-panico" id="btn-panico-tras" onclick="event.stopPropagation(); iniciarPanico('environment')" title="Cámara trasera">📷</div>
+<div class="btn-panico" id="btn-panico-front" onclick="event.stopPropagation(); iniciarPanico('user')" title="Cámara frontal">🤳</div>
+</div>
+</div>
+
+<!-- Overlay de grabación de pánico -->
+<div id="panico-overlay">
+<video id="panico-video" autoplay muted playsinline></video>
+<div id="panico-controls">
+<div id="panico-cam-label" style="color:rgba(255,255,255,0.7); font-size:12px; font-weight:600; letter-spacing:1px; margin-bottom:2px;"></div>
+<div id="panico-timer">🔴 00:00</div>
+<button class="btn-detener-panico" onclick="detenerPanico()">⏹️ DETENER Y GUARDAR</button>
+</div>
 </div>
 <!-- GPS Button -->
 <button id="btn-gps" class="btn-turno" onclick="toggleSeguimiento()">🚀 INICIAR TURNO</button>
@@ -1445,6 +1499,155 @@ localStorage.setItem('GT_COSTO_REAL_KM', total.toFixed(3));
 guardarDatosCostos();
 }
 // ===== FIN CALCULADORA COSTOS =====
+// ===== BOTON DE PANICO =====
+let panicoStream = null;
+let panicoRecorder = null;
+let panicoChunks = [];
+let panicoTimerInterval = null;
+let panicoSegundos = 0;
+let panicoCamaraActual = 'user'; // delantera por defecto
+
+async function iniciarPanico(camara) {
+    panicoCamaraActual = camara || 'environment';
+    const esFrontal = panicoCamaraActual === 'user';
+
+    // Si ya hay una grabación activa, detenerla primero
+    if (panicoRecorder && panicoRecorder.state === 'recording') {
+        detenerPanico(); return;
+    }
+
+    // Liberar stream previo si existe
+    if (panicoStream) {
+        panicoStream.getTracks().forEach(t => t.stop());
+        panicoStream = null;
+    }
+
+    // Resaltar botón activo
+    document.getElementById('btn-panico-front').style.background = 'rgba(239,68,68,0.15)';
+    document.getElementById('btn-panico-back').style.background = 'rgba(239,68,68,0.15)';
+    const btnActivo = esFrontal ? 'btn-panico-front' : 'btn-panico-back';
+    document.getElementById(btnActivo).style.background = 'var(--rojo)';
+
+    // Actualizar label
+    const lbl = document.getElementById('panico-cam-label');
+    if (lbl) lbl.innerText = esFrontal ? '🤳 CÁMARA FRONTAL' : '📷 CÁMARA TRASERA';
+
+    // Intentar obtener stream — primero con facingMode, luego sin constraints si falla
+    const intentos = [
+        { video: { facingMode: { exact: panicoCamaraActual } }, audio: true },
+        { video: { facingMode: panicoCamaraActual }, audio: true },
+        { video: true, audio: true }
+    ];
+
+    let streamObtenido = false;
+    for (const constraints of intentos) {
+        try {
+            panicoStream = await navigator.mediaDevices.getUserMedia(constraints);
+            streamObtenido = true;
+            break;
+        } catch(e) {
+            console.warn('Intento fallido:', JSON.stringify(constraints), e.name);
+            // Esperar un momento antes de reintentar
+            await new Promise(r => setTimeout(r, 400));
+        }
+    }
+
+    if (!streamObtenido) {
+        document.getElementById(btnActivo).style.background = 'rgba(239,68,68,0.15)';
+        if (!window.isSecureContext) {
+            alert('⚠️ Necesitas HTTPS. Accede desde tu link de GitHub Pages (https://...), no desde un archivo local.');
+        } else {
+            alert('No se pudo acceder a la cámara.\n1. Recarga la app y vuelve a intentar\n2. En Chrome: toca el ícono junto a la URL -> Permisos -> activa Camara\n3. Reinicia el navegador si otra app bloqueo la camara');
+        }
+        return;
+    }
+
+    // Configurar video preview
+    const video = document.getElementById('panico-video');
+    video.srcObject = panicoStream;
+    video.style.transform = esFrontal ? 'scaleX(-1)' : 'scaleX(1)'; // espejo para frontal
+    document.getElementById('panico-overlay').style.display = 'flex';
+
+    // Configurar grabador
+    panicoChunks = [];
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9'
+        : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : '';
+    try {
+        panicoRecorder = new MediaRecorder(panicoStream, mimeType ? { mimeType } : {});
+    } catch(e) {
+        panicoRecorder = new MediaRecorder(panicoStream);
+    }
+    panicoRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) panicoChunks.push(e.data); };
+    panicoRecorder.onstop = () => guardarVideoPanico();
+    panicoRecorder.start(1000); // chunk cada 1 segundo para no perder datos
+
+    // Timer
+    panicoSegundos = 0;
+    actualizarPanicoTimer();
+    panicoTimerInterval = setInterval(() => { panicoSegundos++; actualizarPanicoTimer(); }, 1000);
+
+    // Wake lock
+    if ('wakeLock' in navigator) {
+        try { await navigator.wakeLock.request('screen'); } catch(e) {}
+    }
+}
+
+function actualizarPanicoTimer() {
+    const m = Math.floor(panicoSegundos / 60).toString().padStart(2, '0');
+    const s = (panicoSegundos % 60).toString().padStart(2, '0');
+    const el = document.getElementById('panico-timer');
+    if (el) el.innerText = `🔴 ${m}:${s}`;
+}
+
+function detenerPanico() {
+    if (panicoRecorder && panicoRecorder.state !== 'inactive') {
+        panicoRecorder.stop();
+    }
+    if (panicoStream) {
+        panicoStream.getTracks().forEach(track => track.stop());
+        panicoStream = null;
+    }
+    if (panicoTimerInterval) {
+        clearInterval(panicoTimerInterval);
+        panicoTimerInterval = null;
+    }
+    document.getElementById('panico-overlay').style.display = 'none';
+    // Reset botones
+    const f = document.getElementById('btn-panico-front');
+    const b = document.getElementById('btn-panico-back');
+    if (f) f.style.background = 'rgba(239,68,68,0.15)';
+    if (b) b.style.background = 'rgba(239,68,68,0.15)';
+}
+
+function guardarVideoPanico() {
+    if (panicoChunks.length === 0) return;
+    const blob = new Blob(panicoChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const fecha = new Date();
+    const nombreArchivo = `panico_GT_${fecha.toLocaleDateString('en-CA')}_${fecha.toTimeString().slice(0,8).replace(/:/g,'-')}.webm`;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    panicoChunks = [];
+
+    alert('✅ Video guardado en tu carpeta de Descargas: ' + nombreArchivo);
+}
+
+// Detectar si la app pasa a segundo plano durante grabación (la cámara se cortará)
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && panicoRecorder && panicoRecorder.state === 'recording') {
+        // El navegador pausará/cortará la grabación en background; al volver, detenemos y guardamos lo que se alcanzó a grabar
+        console.warn('App en segundo plano: la grabación de pánico puede haberse interrumpido.');
+    }
+});
+// ===== FIN BOTON DE PANICO =====
+
 // ===== IDIOMA Y TEMA =====
 let idiomaActual = localStorage.getItem('gt_idioma') || 'es';
 let temaOscuro = localStorage.getItem('gt_tema') === 'dark';
@@ -1531,18 +1734,50 @@ document.getElementById('btn-tema').classList.remove('active-dark');
 // ===== FIN IDIOMA Y TEMA =====
 window.onpopstate = function() { cerrarModalesYModos(); document.getElementById('page-reportes').classList.add('hidden'); document.getElementById('page-perfil').classList.add('hidden'); document.getElementById('page-costos').classList.add('hidden'); document.getElementById('page-mant').classList.add('hidden'); };
 function pushEstado() { history.pushState({view: 'subpage'}, ""); }
+function ocultarSplash() {
+    const splash = document.getElementById('splash');
+    if (!splash) return;
+    splash.style.transition = 'opacity 0.6s ease';
+    splash.style.opacity = '0';
+    setTimeout(() => { splash.style.display = 'none'; }, 700);
+}
+
 function inicializar() {
-document.getElementById('input-fecha-filtro').value = new Date().toLocaleDateString('en-CA');
-cargarDatosPerfil(); dibujarCats(); initCharts(); actualizarInterfaz();
-// Init first metodo chip active
-const primerChip = document.querySelector('#metodos-chips .chip');
-if (primerChip) primerChip.classList.add('metodo-active');
-const grid = document.getElementById('grid-variedad');
-grid.innerHTML = listaEmojis.map(e => `<span class="emoji-option" onclick="seleccionarEmoji('${e}')">${e}</span>`).join('');
-cargarDatosVehiculo();
-aplicarTema();
-aplicarIdioma();
-setTimeout(() => { document.getElementById('splash').style.opacity = '0'; setTimeout(() => document.getElementById('splash').style.display = 'none', 800); }, 3000);
+    // Ocultar splash garantizado: pase lo que pase a los 3s
+    const splashTimer = setTimeout(ocultarSplash, 3000);
+
+    try {
+        document.getElementById('input-fecha-filtro').value = new Date().toLocaleDateString('en-CA');
+        cargarDatosPerfil();
+        dibujarCats();
+        initCharts();
+
+        // Init first metodo chip active
+        const primerChip = document.querySelector('#metodos-chips .chip');
+        if (primerChip) primerChip.classList.add('metodo-active');
+
+        const grid = document.getElementById('grid-variedad');
+        if (grid) grid.innerHTML = listaEmojis.map(e => `<span class="emoji-option" onclick="seleccionarEmoji('${e}')">${e}</span>`).join('');
+
+        cargarDatosVehiculo();
+        aplicarTema();
+        aplicarIdioma();
+
+        // Diferir actualizarInterfaz para no bloquear el render del splash
+        requestAnimationFrame(() => setTimeout(() => {
+            try { actualizarInterfaz(); } catch(e) { console.error('actualizarInterfaz:', e); }
+        }, 100));
+
+        // Ocultar splash antes si todo cargó bien
+        clearTimeout(splashTimer);
+        setTimeout(ocultarSplash, 2200);
+
+    } catch(e) {
+        console.error('Error en inicializar:', e);
+        // Aún así ocultar splash para no quedar bloqueado
+        clearTimeout(splashTimer);
+        setTimeout(ocultarSplash, 500);
+    }
 }
 function cargarDatosPerfil() {
 document.getElementById('perf-usuario').innerText = userData.nombre;
