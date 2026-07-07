@@ -1499,6 +1499,34 @@ localStorage.setItem('GT_COSTO_REAL_KM', total.toFixed(3));
 guardarDatosCostos();
 }
 // ===== FIN CALCULADORA COSTOS =====
+// ===== CAMARA NATIVA (funciona con archivo local) =====
+function abrirCamaraNativa(camara) {
+    const inputId = camara === 'user' ? 'input-camara-frontal' : 'input-camara-trasera';
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.value = ''; // reset para poder seleccionar de nuevo
+        input.click();
+    }
+}
+
+function videoCapturado(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const url = URL.createObjectURL(file);
+    // Descargar automáticamente con nombre de fecha
+    const fecha = new Date();
+    const nombre = 'GT_video_' + fecha.toLocaleDateString('en-CA') + '_' + 
+        fecha.toTimeString().slice(0,8).replace(/:/g,'-') + '.' + file.name.split('.').pop();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+// ===== FIN CAMARA NATIVA =====
+
 // ===== BOTON DE PANICO =====
 let panicoStream = null;
 let panicoRecorder = null;
