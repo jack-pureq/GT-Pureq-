@@ -1970,8 +1970,17 @@ movs.forEach(m => {
     filteredList.push(m);
     const esI = m.tipo === 'ingreso';
     if (esI) {
-        dIng[m.catN] = (dIng[m.catN] || 0) + m.mon;
-        totalIng += m.mon;
+        // Cobro mixto filtrado: usar solo el monto del método seleccionado
+        let monReal = m.mon;
+        if (m.esMixto && filtroMetodoReporte !== 'Todos') {
+            monReal = filtroMetodoReporte === 'Efectivo' ? (m.monEfectivo || 0)
+                    : filtroMetodoReporte === 'Yape'     ? (m.monYape || 0)
+                    : filtroMetodoReporte === 'Plin'     ? (m.monPlin || 0)
+                    : filtroMetodoReporte === 'Tarjeta'  ? (m.monTarjeta || 0)
+                    : m.mon;
+        }
+        dIng[m.catN] = (dIng[m.catN] || 0) + monReal;
+        totalIng += monReal;
         const srv = m.tipoServicio || (m.catN && m.catN.includes('[Confort]') ? 'Confort' : m.catN && m.catN.includes('[XL]') ? 'XL' : 'Normal');
         if (srv === 'Confort') cntConfort++; else if (srv === 'XL') cntXL++; else cntNormal++;
     } else {
