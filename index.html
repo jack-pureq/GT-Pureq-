@@ -492,7 +492,7 @@ border-radius: var(--radius-sm); padding: 14px; margin-top: 8px;
 }
 .hist-total .t-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; padding: 3px 0; }
 /* Dark/light toggle labels */
-#lbl-tema, #lbl-idioma { font-size: 11px; }
+#lbl-tema { font-size: 11px; }
 /* ===== MODAL COBRO MIXTO ===== */
 .cobro-method-row {
     display: flex; align-items: center; gap: 8px;
@@ -703,7 +703,6 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <div class="top-bar">
 <div class="top-bar-left">GT PUREJ</div>
 <div class="top-bar-actions">
-<button class="btn-icon" id="btn-idioma" onclick="toggleIdioma()">🌐 <span id="lbl-idioma">EN</span></button>
 <button class="btn-icon" id="btn-tema" onclick="toggleTema()">🌙 <span id="lbl-tema">Dark</span></button>
 <button class="btn-icon" onclick="irACostos(true)">📊 <span>Costos</span></button>
             <button class="btn-icon" onclick="irAMant(true)">🔧 <span>Mant.</span></button>
@@ -724,7 +723,7 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <div class="chips-row" id="cat-chips"></div>
 <!-- Métodos de pago -->
 <div class="chips-row" id="metodos-chips">
-<div class="chip" onclick="setMetodo('Cash','💵',this)" data-activo="true">💵 CASH</div>
+<div class="chip" onclick="setMetodo('Efectivo','💵',this)" data-activo="true">💵 EFECTIVO</div>
 <div class="chip" onclick="setMetodo('Yape','🟣',this)">🟣 YAPE</div>
 <div class="chip" onclick="setMetodo('Plin','🔵',this)">🔵 PLIN</div>
 <div class="chip" onclick="setMetodo('Tarjeta','💳',this)">💳 TARJETA</div>
@@ -779,7 +778,7 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <!-- Filtros pago -->
 <div class="filter-row">
 <div class="filter-chip active" id="f-todos" onclick="filtrarPorMetodo('Todos',this)">TODOS</div>
-<div class="filter-chip" onclick="filtrarPorMetodo('Efectivo',this)">CASH</div>
+<div class="filter-chip" onclick="filtrarPorMetodo('Efectivo',this)">EFECTIVO</div>
 <div class="filter-chip" onclick="filtrarPorMetodo('Yape',this)">YAPE</div>
 <div class="filter-chip" onclick="filtrarPorMetodo('Plin',this)">PLIN</div>
 <div class="filter-chip" onclick="filtrarPorMetodo('Tarjeta',this)">TARJETA</div>
@@ -1446,85 +1445,22 @@ guardarDatosCostos();
 }
 // ===== FIN CALCULADORA COSTOS =====
 // ===== IDIOMA Y TEMA =====
-let idiomaActual = localStorage.getItem('gt_idioma') || 'es';
 let temaOscuro = localStorage.getItem('gt_tema') === 'dark';
-const traducciones = {
-es: {
-perfil: 'Perfil', iniciarTurno: '🚀 INICIAR TURNO', finalizarTurno: '🛑 FINALIZAR',
-ingreso: '➕ INGRESO', gasto: '➖ GASTO', efectivo: '💵 CASH',
-tarjeta: '💳 TARJETA', abrirReportes: '📂 ABRIR REPORTES',
-dia: 'Día', semana: 'Semana', mes: 'Mes', anio: 'Año',
-todos: 'TODOS', whatsapp: '📲 WHATSAPP',
-solKm: 'S/. por KM', solHr: 'S/. por Hora',
-rendimiento: '📊 RENDIMIENTO DEL PERIODO',
-dark: 'Dark', light: 'Light', lblBalance: 'GESTOR TAXI JACK', privado: '🔒 MODO PRIVADO'
-},
-en: {
-perfil: 'Profile', iniciarTurno: '🚀 START SHIFT', finalizarTurno: '🛑 END SHIFT',
-ingreso: '➕ INCOME', gasto: '➖ EXPENSE', efectivo: '💵 CASH',
-tarjeta: '💳 CARD', abrirReportes: '📂 OPEN REPORTS',
-dia: 'Day', semana: 'Week', mes: 'Month', anio: 'Year',
-todos: 'ALL', whatsapp: '📲 WHATSAPP',
-solKm: 'S/. per KM', solHr: 'S/. per Hour',
-rendimiento: '📊 PERIOD PERFORMANCE',
-dark: 'Dark', light: 'Light', lblBalance: 'TAXI JACK MANAGER', privado: '🔒 PRIVATE MODE'
-}
-};
-function toggleIdioma() {
-idiomaActual = idiomaActual === 'es' ? 'en' : 'es';
-localStorage.setItem('gt_idioma', idiomaActual);
-aplicarIdioma();
-}
-function aplicarIdioma() {
-const t = traducciones[idiomaActual];
-document.getElementById('lbl-idioma').innerText = idiomaActual === 'es' ? 'EN' : 'ES';
-// Botón GPS
-const btnGps = document.getElementById('btn-gps');
-if (btnGps) btnGps.innerText = activo ? t.finalizarTurno : t.iniciarTurno;
-// Botones principales
-const btns = document.querySelectorAll('[data-i]');
-btns.forEach(b => { const k = b.getAttribute('data-i'); if(t[k]) b.innerText = t[k]; });
-// Métodos de pago
-const metodosBtns = document.querySelectorAll('.metodo-btn');
-if(metodosBtns[0]) metodosBtns[0].innerHTML = t.efectivo;
-if(metodosBtns[3]) metodosBtns[3].innerHTML = t.tarjeta;
-// Tabs de periodo
-const tabs = document.querySelectorAll('.tab-btn');
-const periodos = [t.dia, t.semana, t.mes, t.anio];
-tabs.forEach((tab, i) => { if(periodos[i]) tab.innerText = periodos[i]; });
-// Filtro todos
-const fTodos = document.getElementById('f-todos');
-if(fTodos) fTodos.innerText = t.todos;
-// WhatsApp btn
-const waBtn = document.querySelector('[onclick="compartirWhatsApp()"]');
-if(waBtn) waBtn.innerText = t.whatsapp;
-// Rendimiento card
-const rendCard = document.querySelector('#resumen-turno-card h4');
-if(rendCard) rendCard.innerText = t.rendimiento;
-const lblKm = document.querySelector('#res-sol-km')?.previousElementSibling;
-const lblHr = document.querySelector('#res-sol-hr')?.previousElementSibling;
-if(lblKm) lblKm.innerText = t.solKm;
-if(lblHr) lblHr.innerText = t.solHr;
-// Reportes link
-const rLink = document.querySelector('[onclick="irAReportes(true)"]');
-if(rLink) rLink.innerText = t.abrirReportes;
-// Balance label
-if(!modoPrivado) document.getElementById('lbl-status-balance').innerText = t.lblBalance;
-}
+
+
 function toggleTema() {
 temaOscuro = !temaOscuro;
 localStorage.setItem('gt_tema', temaOscuro ? 'dark' : 'light');
 aplicarTema();
 }
 function aplicarTema() {
-const t = traducciones[idiomaActual];
 if (temaOscuro) {
 document.body.classList.remove('light');
-document.getElementById('lbl-tema').innerText = t.light;
+document.getElementById('lbl-tema').innerText = 'Light';
 document.getElementById('btn-tema').classList.add('active-dark');
 } else {
 document.body.classList.add('light');
-document.getElementById('lbl-tema').innerText = t.dark;
+document.getElementById('lbl-tema').innerText = 'Dark';
 document.getElementById('btn-tema').classList.remove('active-dark');
 }
 }
@@ -1541,7 +1477,6 @@ const grid = document.getElementById('grid-variedad');
 grid.innerHTML = listaEmojis.map(e => `<span class="emoji-option" onclick="seleccionarEmoji('${e}')">${e}</span>`).join('');
 cargarDatosVehiculo();
 aplicarTema();
-aplicarIdioma();
 setTimeout(() => { document.getElementById('splash').style.opacity = '0'; setTimeout(() => document.getElementById('splash').style.display = 'none', 800); }, 3000);
 }
 function cargarDatosPerfil() {
