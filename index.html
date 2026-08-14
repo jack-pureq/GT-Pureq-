@@ -724,7 +724,7 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <div class="chips-row" id="cat-chips"></div>
 <!-- Métodos de pago -->
 <div class="chips-row" id="metodos-chips">
-<div class="chip" onclick="setMetodo('Efectivo','💵',this)" data-activo="true">💵 EFECTIVO</div>
+<div class="chip" onclick="setMetodo('Cash','💵',this)" data-activo="true">💵 CASH</div>
 <div class="chip" onclick="setMetodo('Yape','🟣',this)">🟣 YAPE</div>
 <div class="chip" onclick="setMetodo('Plin','🔵',this)">🔵 PLIN</div>
 <div class="chip" onclick="setMetodo('Tarjeta','💳',this)">💳 TARJETA</div>
@@ -779,7 +779,7 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <!-- Filtros pago -->
 <div class="filter-row">
 <div class="filter-chip active" id="f-todos" onclick="filtrarPorMetodo('Todos',this)">TODOS</div>
-<div class="filter-chip" onclick="filtrarPorMetodo('Efectivo',this)">EFECTIVO</div>
+<div class="filter-chip" onclick="filtrarPorMetodo('Efectivo',this)">CASH</div>
 <div class="filter-chip" onclick="filtrarPorMetodo('Yape',this)">YAPE</div>
 <div class="filter-chip" onclick="filtrarPorMetodo('Plin',this)">PLIN</div>
 <div class="filter-chip" onclick="filtrarPorMetodo('Tarjeta',this)">TARJETA</div>
@@ -1451,7 +1451,7 @@ let temaOscuro = localStorage.getItem('gt_tema') === 'dark';
 const traducciones = {
 es: {
 perfil: 'Perfil', iniciarTurno: '🚀 INICIAR TURNO', finalizarTurno: '🛑 FINALIZAR',
-ingreso: '➕ INGRESO', gasto: '➖ GASTO', efectivo: '💵 EFECTIVO',
+ingreso: '➕ INGRESO', gasto: '➖ GASTO', efectivo: '💵 CASH',
 tarjeta: '💳 TARJETA', abrirReportes: '📂 ABRIR REPORTES',
 dia: 'Día', semana: 'Semana', mes: 'Mes', anio: 'Año',
 todos: 'TODOS', whatsapp: '📲 WHATSAPP',
