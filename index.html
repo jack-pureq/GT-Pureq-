@@ -1863,10 +1863,19 @@ let horaFin = null;
 if (periodoActual === 'dia') {
     // DÍA: usar hora exacta de inicio de turno guardada
     const fFiltro = document.getElementById('input-fecha-filtro').value;
-    const esHoy = fFiltro === new Date().toLocaleDateString('en-CA');
+    const hoyReal = new Date().toLocaleDateString('en-CA');
+    // Con jornada activa, considerar "hoy" también la fecha de jornada
+    const fechaJornadaStr = jornadaActiva && fechaJornada
+        ? new Date(fechaJornada).toLocaleDateString('en-CA') : null;
+    const esFiltroActivo = fFiltro === hoyReal || (fechaJornadaStr && fFiltro === fechaJornadaStr);
+
     const inicioPorFecha = localStorage.getItem('gt_inicio_' + fFiltro);
-    const inicioActivo = esHoy ? localStorage.getItem('gt_inicio_turno') : null;
-    const turnoGuardado = inicioActivo || inicioPorFecha;
+    // Incluir gt_inicio_turno si el filtro corresponde a la jornada/día activo
+    const inicioActivo = esFiltroActivo ? localStorage.getItem('gt_inicio_turno') : null;
+    // También buscar con la fecha real por si el turno se guardó con fecha de reloj
+    const inicioPorFechaReal = fFiltro !== hoyReal ? localStorage.getItem('gt_inicio_' + hoyReal) : null;
+    const turnoGuardado = inicioActivo || inicioPorFecha || inicioPorFechaReal;
+
     const fechas = movimientosFiltrados.map(m => new Date(m.fecha)).sort((a,b) => a-b);
     movimientosFiltrados.forEach(m => { if (m.tipo === 'ingreso') kmTotales += parseFloat(m.km) || 0; });
     if (fechas.length >= 1) {
@@ -2073,13 +2082,23 @@ bufferPosiciones = []; ultimaPosValida = null; velocidadActual = 0;
 elKm.value = "0.00 KM"; elHrs.value = "0h 0m";
 localStorage.setItem('gt_dist_turno', '0');
 localStorage.setItem('gt_tinicio', tInicio.toISOString());
-// Guardar hora de inicio del turno con la fecha del día
+// Guardar hora de inicio del turno
 horaInicioTurno = new Date();
 const hoyKey = horaInicioTurno.toLocaleDateString('en-CA');
-// Solo guardar si no hay una hora de inicio anterior para hoy
+// Guardar con la fecha real del reloj
 const inicioExistente = localStorage.getItem('gt_inicio_' + hoyKey);
 if (!inicioExistente) {
-localStorage.setItem('gt_inicio_' + hoyKey, horaInicioTurno.toISOString());
+    localStorage.setItem('gt_inicio_' + hoyKey, horaInicioTurno.toISOString());
+}
+// Si hay jornada activa con fecha diferente, guardar también con esa fecha
+if (jornadaActiva && fechaJornada) {
+    const jornadaKey = new Date(fechaJornada).toLocaleDateString('en-CA');
+    if (jornadaKey !== hoyKey) {
+        const inicioJornadaExistente = localStorage.getItem('gt_inicio_' + jornadaKey);
+        if (!inicioJornadaExistente) {
+            localStorage.setItem('gt_inicio_' + jornadaKey, horaInicioTurno.toISOString());
+        }
+    }
 }
 localStorage.setItem('gt_inicio_turno', horaInicioTurno.toISOString());
 // Timer independiente para las horas
