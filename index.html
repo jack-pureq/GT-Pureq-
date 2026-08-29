@@ -1506,6 +1506,9 @@ function toggleJornada() {
         fechaJornada = new Date().toISOString();
         localStorage.setItem('gt_jornada_activa', '1');
         localStorage.setItem('gt_jornada_fecha', fechaJornada);
+        // Guardar hora de inicio indexada por fecha para calcular S/. por hora
+        const _jKey = new Date(fechaJornada).toLocaleDateString('en-CA');
+        localStorage.setItem('gt_jornada_inicio_' + _jKey, fechaJornada);
         actualizarBtnJornada();
         actualizarInterfaz();
     } else {
@@ -1552,6 +1555,11 @@ function cargarEstadoJornada() {
     if (activa === '1' && fecha) {
         jornadaActiva = true;
         fechaJornada = fecha;
+        // Asegurar que la clave por fecha esté guardada (por si se perdió)
+        const _jKey = new Date(fecha).toLocaleDateString('en-CA');
+        if (!localStorage.getItem('gt_jornada_inicio_' + _jKey)) {
+            localStorage.setItem('gt_jornada_inicio_' + _jKey, fecha);
+        }
     }
     actualizarBtnJornada();
 }
@@ -1861,31 +1869,44 @@ let horaInicio = null;
 let horaFin = null;
 
 if (periodoActual === 'dia') {
-    // DÍA: usar hora exacta de inicio de turno guardada
     const fFiltro = document.getElementById('input-fecha-filtro').value;
     const hoyReal = new Date().toLocaleDateString('en-CA');
-    // Con jornada activa, considerar "hoy" también la fecha de jornada
-    const fechaJornadaStr = jornadaActiva && fechaJornada
-        ? new Date(fechaJornada).toLocaleDateString('en-CA') : null;
-    const esFiltroActivo = fFiltro === hoyReal || (fechaJornadaStr && fFiltro === fechaJornadaStr);
 
-    const inicioPorFecha = localStorage.getItem('gt_inicio_' + fFiltro);
-    // Incluir gt_inicio_turno si el filtro corresponde a la jornada/día activo
-    const inicioActivo = esFiltroActivo ? localStorage.getItem('gt_inicio_turno') : null;
-    // También buscar con la fecha real por si el turno se guardó con fecha de reloj
-    const inicioPorFechaReal = fFiltro !== hoyReal ? localStorage.getItem('gt_inicio_' + hoyReal) : null;
-    const turnoGuardado = inicioActivo || inicioPorFecha || inicioPorFechaReal;
-
+    // Recopilar movimientos del período
     const fechas = movimientosFiltrados.map(m => new Date(m.fecha)).sort((a,b) => a-b);
     movimientosFiltrados.forEach(m => { if (m.tipo === 'ingreso') kmTotales += parseFloat(m.km) || 0; });
+
     if (fechas.length >= 1) {
         horaFin = fechas[fechas.length - 1];
-        if (turnoGuardado) {
-            const h = new Date(turnoGuardado);
-            horaInicio = h < fechas[0] ? h : fechas[0];
+
+        // PRIORIDAD 1: Hora de INICIO JORNADA guardada para esta fecha
+        const jornadaKey = 'gt_jornada_inicio_' + fFiltro;
+        const jornadaGuardada = localStorage.getItem(jornadaKey);
+
+        // PRIORIDAD 2: Jornada activa en memoria (misma fecha)
+        const jornadaEnMemoria = (jornadaActiva && fechaJornada &&
+            new Date(fechaJornada).toLocaleDateString('en-CA') === fFiltro)
+            ? fechaJornada : null;
+
+        // PRIORIDAD 3: gt_inicio_turno (inicio de GPS del día)
+        const esDiaActivo = fFiltro === hoyReal || jornadaEnMemoria;
+        const inicioTurno = esDiaActivo ? localStorage.getItem('gt_inicio_turno') : null;
+        const inicioPorFecha = localStorage.getItem('gt_inicio_' + fFiltro);
+
+        // Elegir la hora de inicio más temprana disponible
+        const candidatos = [jornadaGuardada, jornadaEnMemoria, inicioTurno, inicioPorFecha]
+            .filter(Boolean)
+            .map(s => new Date(s))
+            .filter(d => !isNaN(d));
+
+        if (candidatos.length > 0) {
+            // La más temprana que sea anterior al último registro
+            const masTemprana = candidatos.reduce((min, d) => d < min ? d : min);
+            horaInicio = masTemprana < horaFin ? masTemprana : fechas[0];
         } else {
             horaInicio = fechas[0];
         }
+
         const diff = horaFin - horaInicio;
         if (diff > 0) {
             horasDecimal = diff / 3600000;
@@ -1893,7 +1914,8 @@ if (periodoActual === 'dia') {
             txtHoras = `${hh}h ${mm}m`;
         }
     }
-    // Mostrar rango
+
+    // Mostrar rango horario
     const elRango = document.getElementById('res-rango-horas');
     if (elRango && horaInicio && horaFin) {
         const fmt = d => d.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit', hour12:false});
