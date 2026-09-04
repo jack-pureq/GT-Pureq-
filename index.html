@@ -123,31 +123,34 @@ transition: all 0.2s; display: flex; align-items: center; justify-content: cente
 .btn-turno:active { transform: scale(0.98); }
 .btn-turno.activo { background: linear-gradient(135deg, #475569, #334155); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
-/* ===== BOTÓN JORNADA ===== */
+/* ===== BOTÓN EXTENSIÓN DÍA ===== */
 .turno-row { display: flex; gap: 8px; margin-bottom: 12px; }
-.btn-jornada {
-    flex: 0 0 auto; width: 58px; border-radius: var(--radius);
-    border: 2px solid var(--verde); background: rgba(34,197,94,0.1);
-    color: var(--verde); font-size: 10px; font-weight: 800;
+.btn-turno-wrap { flex: 1; }
+.btn-extension {
+    flex: 0 0 auto; width: 56px; border-radius: var(--radius);
+    border: 2px solid var(--text3); background: var(--surface);
+    color: var(--text3); font-size: 9px; font-weight: 800;
     cursor: pointer; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 2px;
+    align-items: center; justify-content: center; gap: 3px;
     transition: all 0.2s; line-height: 1.2; padding: 6px 4px;
 }
-.btn-jornada:active { transform: scale(0.95); }
-.btn-jornada.activa {
-    background: rgba(34,197,94,0.25); border-color: var(--verde);
-    animation: pulso-jornada 2s infinite;
+.btn-extension:active { transform: scale(0.95); }
+.btn-extension .ext-icono { font-size: 20px; display: block; }
+.btn-extension .ext-texto { font-size: 8px; text-align: center; letter-spacing: 0.3px; }
+.btn-extension.activa {
+    border-color: var(--naranja); background: rgba(245,158,11,0.15);
+    color: var(--naranja); animation: pulso-ext 2s infinite;
 }
-.btn-jornada.activa .jornada-icono { animation: spin-lento 4s linear infinite; }
-@keyframes pulso-jornada {
-    0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+@keyframes pulso-ext {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
+    50%      { box-shadow: 0 0 0 7px rgba(245,158,11,0); }
 }
-@keyframes spin-lento { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.jornada-icono { font-size: 18px; display: block; }
-.jornada-texto { font-size: 8px; text-align: center; }
-.btn-turno-wrap { flex: 1; }
-/* ===== FIN BOTÓN JORNADA ===== */
+.ext-info {
+    text-align: center; font-size: 10px; color: var(--naranja);
+    font-weight: 700; margin-top: 4px; letter-spacing: 0.3px;
+    display: none;
+}
+/* ===== FIN BOTÓN EXTENSIÓN DÍA ===== */
 /* ===== CATS & METODOS ===== */
 .chips-row { display: flex; gap: 8px; overflow-x: auto; overflow-y: visible; padding: 2px 0 8px; scrollbar-width: none; margin-bottom: 4px; -webkit-overflow-scrolling: touch; }
 .chips-row::-webkit-scrollbar { display: none; }
@@ -745,14 +748,14 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 </div>
 <!-- GPS Button -->
 <div class="turno-row">
-    <button id="btn-jornada" class="btn-jornada" onclick="toggleJornada()" title="Iniciar/Finalizar jornada de trabajo">
-        <span class="jornada-icono">📅</span>
-        <span class="jornada-texto" id="txt-jornada">INICIAR<br>JORNADA</span>
-    </button>
     <div class="btn-turno-wrap">
         <button id="btn-gps" class="btn-turno" onclick="toggleSeguimiento()" style="width:100%; margin-bottom:0;">🚀 INICIAR TURNO</button>
-        <div id="jornada-info" style="display:none; text-align:center; font-size:10px; color:var(--verde); font-weight:700; margin-top:4px; letter-spacing:0.5px;"></div>
+        <div id="ext-info" class="ext-info"></div>
     </div>
+    <button id="btn-extension" class="btn-extension" onclick="toggleExtension()" title="Extender día de trabajo pasada la medianoche">
+        <span class="ext-icono">🌙</span>
+        <span class="ext-texto" id="txt-extension">EXTENDER<br>DÍA</span>
+    </button>
 </div>
 <!-- Categorías -->
 <div class="chips-row" id="cat-chips"></div>
@@ -1482,88 +1485,82 @@ guardarDatosCostos();
 // ===== IDIOMA Y TEMA =====
 let temaOscuro = localStorage.getItem('gt_tema') === 'dark';
 
-// ===== JORNADA DE TRABAJO =====
-let jornadaActiva = false;
-let fechaJornada = null; // fecha ISO de inicio de jornada (se usa como "fecha del día")
+// ===== EXTENSIÓN DE DÍA =====
+// Permite que los registros de madrugada cuenten como el dia anterior
+let extDiaActiva = false;
+let extDiaFechaBase = null; // fecha 'YYYY-MM-DD' del día que se está extendiendo
 
 function getFechaJornada() {
-    // Si hay jornada activa, devuelve la fecha de inicio de jornada
-    // Si no, devuelve la fecha actual del reloj
-    if (jornadaActiva && fechaJornada) return fechaJornada;
+    // Si extension activa: usar fecha base + hora real actual
+    // Así todos los registros tienen la fecha del día extendido pero su hora real
+    if (extDiaActiva && extDiaFechaBase) {
+        const ahora = new Date();
+        const horaStr = ahora.toTimeString().slice(0,8); // HH:MM:SS
+        return new Date(extDiaFechaBase + 'T' + horaStr).toISOString();
+    }
     return new Date().toISOString();
 }
 
 function getFechaJornadaStr() {
-    // Devuelve "YYYY-MM-DD" para comparaciones de fecha
-    const iso = jornadaActiva && fechaJornada ? fechaJornada : new Date().toISOString();
-    return new Date(iso).toLocaleDateString('en-CA');
+    if (extDiaActiva && extDiaFechaBase) return extDiaFechaBase;
+    return new Date().toLocaleDateString('en-CA');
 }
 
-function toggleJornada() {
-    if (!jornadaActiva) {
-        // INICIAR JORNADA
-        jornadaActiva = true;
-        fechaJornada = new Date().toISOString();
-        localStorage.setItem('gt_jornada_activa', '1');
-        localStorage.setItem('gt_jornada_fecha', fechaJornada);
-        // Guardar hora de inicio indexada por fecha para calcular S/. por hora
-        const _jKey = new Date(fechaJornada).toLocaleDateString('en-CA');
-        localStorage.setItem('gt_jornada_inicio_' + _jKey, fechaJornada);
-        actualizarBtnJornada();
+function toggleExtension() {
+    if (!extDiaActiva) {
+        // ACTIVAR extension - la fecha base es HOY
+        extDiaFechaBase = new Date().toLocaleDateString('en-CA');
+        extDiaActiva = true;
+        localStorage.setItem('gt_ext_activa', '1');
+        localStorage.setItem('gt_ext_fecha', extDiaFechaBase);
+        actualizarBtnExtension();
         actualizarInterfaz();
     } else {
-        // FINALIZAR JORNADA — confirmar
-        const fecha = new Date(fechaJornada);
-        const horaInicio = fecha.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit', hour12:false});
-        const fechaStr = fecha.toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
-        if (confirm('¿Finalizar jornada del ' + fechaStr + ' iniciada a las ' + horaInicio + '?\n\nTodos los registros quedarán guardados en esa fecha.')) {
-            jornadaActiva = false;
-            fechaJornada = null;
-            localStorage.removeItem('gt_jornada_activa');
-            localStorage.removeItem('gt_jornada_fecha');
-            actualizarBtnJornada();
+        // DESACTIVAR - confirmar
+        const fechaLegible = new Date(extDiaFechaBase + 'T12:00:00')
+            .toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
+        if (confirm('¿Terminar la extensión del día ' + fechaLegible + '?\n\nA partir de ahora los registros usarán la fecha real del reloj.')) {
+            extDiaActiva = false;
+            extDiaFechaBase = null;
+            localStorage.removeItem('gt_ext_activa');
+            localStorage.removeItem('gt_ext_fecha');
+            actualizarBtnExtension();
             actualizarInterfaz();
         }
     }
 }
 
-function actualizarBtnJornada() {
-    const btn = document.getElementById('btn-jornada');
-    const txt = document.getElementById('txt-jornada');
-    const info = document.getElementById('jornada-info');
+function actualizarBtnExtension() {
+    const btn = document.getElementById('btn-extension');
+    const txt = document.getElementById('txt-extension');
+    const info = document.getElementById('ext-info');
     if (!btn) return;
-    if (jornadaActiva && fechaJornada) {
+    if (extDiaActiva && extDiaFechaBase) {
         btn.classList.add('activa');
-        if (txt) txt.innerText = 'FIN\nJORNADA';
-        const fecha = new Date(fechaJornada);
-        const horaInicio = fecha.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit', hour12:false});
-        const fechaStr = fecha.toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
+        if (txt) { txt.innerHTML = 'DÍA<br>EXTENDIDO'; }
+        const fechaLegible = new Date(extDiaFechaBase + 'T12:00:00')
+            .toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
         if (info) {
             info.style.display = 'block';
-            info.innerText = `📅 Jornada: ${fechaStr} desde ${horaInicio}`;
+            info.innerText = '🌙 Extendiendo: ' + fechaLegible;
         }
     } else {
         btn.classList.remove('activa');
-        if (txt) txt.innerText = 'INICIAR\nJORNADA';
+        if (txt) { txt.innerHTML = 'EXTENDER<br>DÍA'; }
         if (info) info.style.display = 'none';
     }
 }
 
 function cargarEstadoJornada() {
-    const activa = localStorage.getItem('gt_jornada_activa');
-    const fecha = localStorage.getItem('gt_jornada_fecha');
+    const activa = localStorage.getItem('gt_ext_activa');
+    const fecha = localStorage.getItem('gt_ext_fecha');
     if (activa === '1' && fecha) {
-        jornadaActiva = true;
-        fechaJornada = fecha;
-        // Asegurar que la clave por fecha esté guardada (por si se perdió)
-        const _jKey = new Date(fecha).toLocaleDateString('en-CA');
-        if (!localStorage.getItem('gt_jornada_inicio_' + _jKey)) {
-            localStorage.setItem('gt_jornada_inicio_' + _jKey, fecha);
-        }
+        extDiaActiva = true;
+        extDiaFechaBase = fecha;
     }
-    actualizarBtnJornada();
+    actualizarBtnExtension();
 }
-// ===== FIN JORNADA DE TRABAJO =====
+// ===== FIN EXTENSIÓN DE DÍA =====
 
 
 function toggleTema() {
@@ -1879,31 +1876,25 @@ if (periodoActual === 'dia') {
     if (fechas.length >= 1) {
         horaFin = fechas[fechas.length - 1];
 
-        // PRIORIDAD 1: Hora de INICIO JORNADA guardada para esta fecha
-        const jornadaKey = 'gt_jornada_inicio_' + fFiltro;
-        const jornadaGuardada = localStorage.getItem(jornadaKey);
+        // Buscar hora de inicio más temprana para este día
+        const esDiaActivo = fFiltro === hoyReal ||
+            (extDiaActiva && extDiaFechaBase === fFiltro);
 
-        // PRIORIDAD 2: Jornada activa en memoria (misma fecha)
-        const jornadaEnMemoria = (jornadaActiva && fechaJornada &&
-            new Date(fechaJornada).toLocaleDateString('en-CA') === fFiltro)
-            ? fechaJornada : null;
-
-        // PRIORIDAD 3: gt_inicio_turno (inicio de GPS del día)
-        const esDiaActivo = fFiltro === hoyReal || jornadaEnMemoria;
+        const candidatos = [];
+        // gt_inicio_turno si es el día activo
         const inicioTurno = esDiaActivo ? localStorage.getItem('gt_inicio_turno') : null;
+        if (inicioTurno) candidatos.push(new Date(inicioTurno));
+        // gt_inicio_FECHA guardado al iniciar GPS
         const inicioPorFecha = localStorage.getItem('gt_inicio_' + fFiltro);
-
-        // Elegir la hora de inicio más temprana disponible
-        const candidatos = [jornadaGuardada, jornadaEnMemoria, inicioTurno, inicioPorFecha]
-            .filter(Boolean)
-            .map(s => new Date(s))
-            .filter(d => !isNaN(d));
+        if (inicioPorFecha) candidatos.push(new Date(inicioPorFecha));
 
         if (candidatos.length > 0) {
-            // La más temprana que sea anterior al último registro
-            const masTemprana = candidatos.reduce((min, d) => d < min ? d : min);
-            horaInicio = masTemprana < horaFin ? masTemprana : fechas[0];
+            const validos = candidatos.filter(d => !isNaN(d) && d < horaFin);
+            horaInicio = validos.length > 0
+                ? validos.reduce((min, d) => d < min ? d : min)
+                : fechas[0];
         } else {
+            // Usar el primer registro del día como inicio
             horaInicio = fechas[0];
         }
 
