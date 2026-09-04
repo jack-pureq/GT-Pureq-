@@ -2103,14 +2103,11 @@ const inicioExistente = localStorage.getItem('gt_inicio_' + hoyKey);
 if (!inicioExistente) {
     localStorage.setItem('gt_inicio_' + hoyKey, horaInicioTurno.toISOString());
 }
-// Si hay jornada activa con fecha diferente, guardar también con esa fecha
-if (jornadaActiva && fechaJornada) {
-    const jornadaKey = new Date(fechaJornada).toLocaleDateString('en-CA');
-    if (jornadaKey !== hoyKey) {
-        const inicioJornadaExistente = localStorage.getItem('gt_inicio_' + jornadaKey);
-        if (!inicioJornadaExistente) {
-            localStorage.setItem('gt_inicio_' + jornadaKey, horaInicioTurno.toISOString());
-        }
+// Si hay extensión activa con fecha diferente al día real, guardar con esa fecha también
+if (extDiaActiva && extDiaFechaBase && extDiaFechaBase !== hoyKey) {
+    const inicioExtExistente = localStorage.getItem('gt_inicio_' + extDiaFechaBase);
+    if (!inicioExtExistente) {
+        localStorage.setItem('gt_inicio_' + extDiaFechaBase, horaInicioTurno.toISOString());
     }
 }
 localStorage.setItem('gt_inicio_turno', horaInicioTurno.toISOString());
