@@ -1593,6 +1593,8 @@ grid.innerHTML = listaEmojis.map(e => `<span class="emoji-option" onclick="selec
 cargarDatosVehiculo();
 aplicarTema();
 cargarEstadoJornada();
+// Limpiar claves antiguas del sistema de jornada (reemplazado por extensión)
+['gt_jornada_activa', 'gt_jornada_fecha'].forEach(k => localStorage.removeItem(k));
 setTimeout(() => { document.getElementById('splash').style.opacity = '0'; setTimeout(() => document.getElementById('splash').style.display = 'none', 800); }, 3000);
 }
 function cargarDatosPerfil() {
