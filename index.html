@@ -123,34 +123,7 @@ transition: all 0.2s; display: flex; align-items: center; justify-content: cente
 .btn-turno:active { transform: scale(0.98); }
 .btn-turno.activo { background: linear-gradient(135deg, #475569, #334155); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
-/* ===== BOTÓN EXTENSIÓN DÍA ===== */
-.turno-row { display: flex; gap: 8px; margin-bottom: 12px; }
-.btn-turno-wrap { flex: 1; }
-.btn-extension {
-    flex: 0 0 auto; width: 56px; border-radius: var(--radius);
-    border: 2px solid var(--text3); background: var(--surface);
-    color: var(--text3); font-size: 9px; font-weight: 800;
-    cursor: pointer; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 3px;
-    transition: all 0.2s; line-height: 1.2; padding: 6px 4px;
-}
-.btn-extension:active { transform: scale(0.95); }
-.btn-extension .ext-icono { font-size: 20px; display: block; }
-.btn-extension .ext-texto { font-size: 8px; text-align: center; letter-spacing: 0.3px; }
-.btn-extension.activa {
-    border-color: var(--naranja); background: rgba(245,158,11,0.15);
-    color: var(--naranja); animation: pulso-ext 2s infinite;
-}
-@keyframes pulso-ext {
-    0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
-    50%      { box-shadow: 0 0 0 7px rgba(245,158,11,0); }
-}
-.ext-info {
-    text-align: center; font-size: 10px; color: var(--naranja);
-    font-weight: 700; margin-top: 4px; letter-spacing: 0.3px;
-    display: none;
-}
-/* ===== FIN BOTÓN EXTENSIÓN DÍA ===== */
+
 /* ===== CATS & METODOS ===== */
 .chips-row { display: flex; gap: 8px; overflow-x: auto; overflow-y: visible; padding: 2px 0 8px; scrollbar-width: none; margin-bottom: 4px; -webkit-overflow-scrolling: touch; }
 .chips-row::-webkit-scrollbar { display: none; }
@@ -747,16 +720,7 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <div class="balance-sub">Toca para ocultar · GT PUREJ Pro</div>
 </div>
 <!-- GPS Button -->
-<div class="turno-row">
-    <div class="btn-turno-wrap">
-        <button id="btn-gps" class="btn-turno" onclick="toggleSeguimiento()" style="width:100%; margin-bottom:0;">🚀 INICIAR TURNO</button>
-        <div id="ext-info" class="ext-info"></div>
-    </div>
-    <button id="btn-extension" class="btn-extension" onclick="toggleExtension()" title="Extender día de trabajo pasada la medianoche">
-        <span class="ext-icono">🌙</span>
-        <span class="ext-texto" id="txt-extension">EXTENDER<br>DÍA</span>
-    </button>
-</div>
+<button id="btn-gps" class="btn-turno" onclick="toggleSeguimiento()">🚀 INICIAR TURNO</button>
 <!-- Categorías -->
 <div class="chips-row" id="cat-chips"></div>
 <!-- Métodos de pago -->
@@ -1487,80 +1451,14 @@ let temaOscuro = localStorage.getItem('gt_tema') === 'dark';
 
 // ===== EXTENSIÓN DE DÍA =====
 // Permite que los registros de madrugada cuenten como el dia anterior
-let extDiaActiva = false;
-let extDiaFechaBase = null; // fecha 'YYYY-MM-DD' del día que se está extendiendo
 
-function getFechaJornada() {
-    // Si extension activa: usar fecha base + hora real actual
-    // Así todos los registros tienen la fecha del día extendido pero su hora real
-    if (extDiaActiva && extDiaFechaBase) {
-        const ahora = new Date();
-        const horaStr = ahora.toTimeString().slice(0,8); // HH:MM:SS
-        return new Date(extDiaFechaBase + 'T' + horaStr).toISOString();
-    }
-    return new Date().toISOString();
-}
+function getFechaJornada() { return new Date().toISOString(); }
 
-function getFechaJornadaStr() {
-    if (extDiaActiva && extDiaFechaBase) return extDiaFechaBase;
-    return new Date().toLocaleDateString('en-CA');
-}
+function getFechaJornadaStr() { return new Date().toLocaleDateString('en-CA'); }
 
-function toggleExtension() {
-    if (!extDiaActiva) {
-        // ACTIVAR extension - la fecha base es HOY
-        extDiaFechaBase = new Date().toLocaleDateString('en-CA');
-        extDiaActiva = true;
-        localStorage.setItem('gt_ext_activa', '1');
-        localStorage.setItem('gt_ext_fecha', extDiaFechaBase);
-        actualizarBtnExtension();
-        actualizarInterfaz();
-    } else {
-        // DESACTIVAR - confirmar
-        const fechaLegible = new Date(extDiaFechaBase + 'T12:00:00')
-            .toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
-        if (confirm('¿Terminar la extensión del día ' + fechaLegible + '?\n\nA partir de ahora los registros usarán la fecha real del reloj.')) {
-            extDiaActiva = false;
-            extDiaFechaBase = null;
-            localStorage.removeItem('gt_ext_activa');
-            localStorage.removeItem('gt_ext_fecha');
-            actualizarBtnExtension();
-            actualizarInterfaz();
-        }
-    }
-}
 
-function actualizarBtnExtension() {
-    const btn = document.getElementById('btn-extension');
-    const txt = document.getElementById('txt-extension');
-    const info = document.getElementById('ext-info');
-    if (!btn) return;
-    if (extDiaActiva && extDiaFechaBase) {
-        btn.classList.add('activa');
-        if (txt) { txt.innerHTML = 'DÍA<br>EXTENDIDO'; }
-        const fechaLegible = new Date(extDiaFechaBase + 'T12:00:00')
-            .toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
-        if (info) {
-            info.style.display = 'block';
-            info.innerText = '🌙 Extendiendo: ' + fechaLegible;
-        }
-    } else {
-        btn.classList.remove('activa');
-        if (txt) { txt.innerHTML = 'EXTENDER<br>DÍA'; }
-        if (info) info.style.display = 'none';
-    }
-}
 
-function cargarEstadoJornada() {
-    const activa = localStorage.getItem('gt_ext_activa');
-    const fecha = localStorage.getItem('gt_ext_fecha');
-    if (activa === '1' && fecha) {
-        extDiaActiva = true;
-        extDiaFechaBase = fecha;
-    }
-    actualizarBtnExtension();
-}
-// ===== FIN EXTENSIÓN DE DÍA =====
+// ===== FIN EXTENSIÓN DE DÍA ELIMINADA =====
 
 
 function toggleTema() {
@@ -1592,9 +1490,8 @@ const grid = document.getElementById('grid-variedad');
 grid.innerHTML = listaEmojis.map(e => `<span class="emoji-option" onclick="seleccionarEmoji('${e}')">${e}</span>`).join('');
 cargarDatosVehiculo();
 aplicarTema();
-cargarEstadoJornada();
-// Limpiar claves antiguas del sistema de jornada (reemplazado por extensión)
-['gt_jornada_activa', 'gt_jornada_fecha'].forEach(k => localStorage.removeItem(k));
+// Limpiar claves antiguas
+['gt_jornada_activa', 'gt_jornada_fecha', 'gt_ext_activa', 'gt_ext_fecha'].forEach(k => localStorage.removeItem(k));
 setTimeout(() => { document.getElementById('splash').style.opacity = '0'; setTimeout(() => document.getElementById('splash').style.display = 'none', 800); }, 3000);
 }
 function cargarDatosPerfil() {
@@ -1696,7 +1593,6 @@ function registrar(tipo) {
 const mon = parseFloat(document.getElementById('monto').value);
 if (mon >= 0) {
 const catObj = cats.find(c => c.id === catSeleccionada), ahora = new Date();
-// Usar fecha de jornada si está activa (para trabajo de madrugada)
 const fechaRegistro = getFechaJornada();
 movs.unshift({
 mon, tipo, catN: catObj.n, catI: catObj.i,
@@ -1879,8 +1775,7 @@ if (periodoActual === 'dia') {
         horaFin = fechas[fechas.length - 1];
 
         // Buscar hora de inicio más temprana para este día
-        const esDiaActivo = fFiltro === hoyReal ||
-            (extDiaActiva && extDiaFechaBase === fFiltro);
+        const esDiaActivo = fFiltro === hoyReal;
 
         const candidatos = [];
         // gt_inicio_turno si es el día activo
@@ -2105,13 +2000,7 @@ const inicioExistente = localStorage.getItem('gt_inicio_' + hoyKey);
 if (!inicioExistente) {
     localStorage.setItem('gt_inicio_' + hoyKey, horaInicioTurno.toISOString());
 }
-// Si hay extensión activa con fecha diferente al día real, guardar con esa fecha también
-if (extDiaActiva && extDiaFechaBase && extDiaFechaBase !== hoyKey) {
-    const inicioExtExistente = localStorage.getItem('gt_inicio_' + extDiaFechaBase);
-    if (!inicioExtExistente) {
-        localStorage.setItem('gt_inicio_' + extDiaFechaBase, horaInicioTurno.toISOString());
-    }
-}
+
 localStorage.setItem('gt_inicio_turno', horaInicioTurno.toISOString());
 // Timer independiente para las horas
 timerHoras = setInterval(() => {
