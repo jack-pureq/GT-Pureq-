@@ -123,6 +123,31 @@ transition: all 0.2s; display: flex; align-items: center; justify-content: cente
 .btn-turno:active { transform: scale(0.98); }
 .btn-turno.activo { background: linear-gradient(135deg, #475569, #334155); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
+/* ===== BOTÓN EXTENDER DÍA ===== */
+.turno-fila { display: flex; gap: 8px; margin-bottom: 12px; align-items: stretch; }
+.turno-fila .btn-turno { flex: 1; margin-bottom: 0; }
+.btn-extender {
+    flex: 0 0 60px; border-radius: var(--radius);
+    border: 2px solid var(--text3); background: var(--surface);
+    color: var(--text3); font-size: 18px; font-weight: 800;
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    transition: all 0.2s; padding: 6px 4px;
+}
+.btn-extender span { font-size: 8px; font-weight: 700; letter-spacing: 0.3px; line-height: 1.3; text-align: center; }
+.btn-extender:active { transform: scale(0.95); }
+.btn-extender.activo {
+    border-color: var(--naranja);
+    background: rgba(245,158,11,0.15);
+    color: var(--naranja);
+    animation: pulso-ext 2s infinite;
+}
+@keyframes pulso-ext {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
+    50%      { box-shadow: 0 0 0 7px rgba(245,158,11,0); }
+}
+/* ===== FIN BOTÓN EXTENDER DÍA ===== */
+
 
 /* ===== CATS & METODOS ===== */
 .chips-row { display: flex; gap: 8px; overflow-x: auto; overflow-y: visible; padding: 2px 0 8px; scrollbar-width: none; margin-bottom: 4px; -webkit-overflow-scrolling: touch; }
@@ -719,8 +744,14 @@ box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: all 0.2s;
 <div class="balance-amount" id="saldo-principal">S/. 0.00</div>
 <div class="balance-sub">Toca para ocultar · GT PUREJ Pro</div>
 </div>
-<!-- GPS Button -->
-<button id="btn-gps" class="btn-turno" onclick="toggleSeguimiento()">🚀 INICIAR TURNO</button>
+<!-- GPS Button + Extender día -->
+<div class="turno-fila">
+    <button id="btn-gps" class="btn-turno" onclick="toggleSeguimiento()">🚀 INICIAR TURNO</button>
+    <button id="btn-extender" class="btn-extender" onclick="toggleExtenderDia()" title="Extender día de trabajo pasada la medianoche">
+        🌙<span>EXTENDER<br>DÍA</span>
+    </button>
+</div>
+<div id="ext-dia-info" style="text-align:center; font-size:11px; font-weight:700; color:var(--naranja); margin-top:-8px; margin-bottom:8px; display:none;"></div>
 <!-- Categorías -->
 <div class="chips-row" id="cat-chips"></div>
 <!-- Métodos de pago -->
@@ -1371,6 +1402,10 @@ Total Recorrido: <span id="total-recorrido">0.00 KM</span>
 <script>
 Chart.register(ChartDataLabels);
 let movs = JSON.parse(localStorage.getItem('movs_v15')) || [];
+
+// ===== EXTENDER DÍA =====
+let extDiaActivo = false;
+let extDiaFecha = null; // 'YYYY-MM-DD' del día que se extiende
 let cats = JSON.parse(localStorage.getItem('cats_v15')) || [{id: 0, n: "Carrera", i: " 🚕 "}, {id: 1, n: "Gasolina", i: " ⛽ "}, {id: 2, n: "Comida", i: " 🍔 "}];
 let metaDiaria = parseFloat(localStorage.getItem('meta_gt_pro')) || 0;
 let userData = JSON.parse(localStorage.getItem('gt_user_v1')) || { nombre: "TAXI JACK", foto: "" };
@@ -1446,6 +1481,80 @@ localStorage.setItem('GT_COSTO_REAL_KM', total.toFixed(3));
 guardarDatosCostos();
 }
 // ===== FIN CALCULADORA COSTOS =====
+// ===== EXTENDER DÍA =====
+function toggleExtenderDia() {
+    if (!extDiaActivo) {
+        // Activar extensión
+        extDiaFecha = new Date().toLocaleDateString('en-CA');
+        extDiaActivo = true;
+        localStorage.setItem('gt_ext_activo', '1');
+        localStorage.setItem('gt_ext_fecha', extDiaFecha);
+        actualizarBtnExtender();
+    } else {
+        // Desactivar extensión
+        const fechaLegible = new Date(extDiaFecha + 'T12:00:00')
+            .toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
+        if (confirm('¿Terminar la extensión del día ' + fechaLegible + '?\n\nA partir de ahora los registros usarán la fecha real del reloj.')) {
+            extDiaActivo = false;
+            extDiaFecha = null;
+            localStorage.removeItem('gt_ext_activo');
+            localStorage.removeItem('gt_ext_fecha');
+            actualizarBtnExtender();
+            actualizarInterfaz();
+        }
+    }
+}
+
+function actualizarBtnExtender() {
+    const btn = document.getElementById('btn-extender');
+    const info = document.getElementById('ext-dia-info');
+    if (!btn) return;
+    if (extDiaActivo && extDiaFecha) {
+        btn.classList.add('activo');
+        const fechaLegible = new Date(extDiaFecha + 'T12:00:00')
+            .toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
+        btn.innerHTML = '🌙<span>FIN<br>EXTENDER</span>';
+        if (info) {
+            info.style.display = 'block';
+            info.innerText = '🌙 Extendiendo: ' + fechaLegible;
+        }
+        // Actualizar filtro de fecha en reportes
+        const inputFecha = document.getElementById('input-fecha-filtro');
+        if (inputFecha) inputFecha.value = extDiaFecha;
+    } else {
+        btn.classList.remove('activo');
+        btn.innerHTML = '🌙<span>EXTENDER<br>DÍA</span>';
+        if (info) {
+            info.style.display = 'none';
+            info.innerText = '';
+        }
+        // Restaurar fecha real
+        const inputFecha = document.getElementById('input-fecha-filtro');
+        if (inputFecha) inputFecha.value = new Date().toLocaleDateString('en-CA');
+    }
+}
+
+function cargarEstadoExtension() {
+    const activo = localStorage.getItem('gt_ext_activo');
+    const fecha = localStorage.getItem('gt_ext_fecha');
+    if (activo === '1' && fecha) {
+        extDiaActivo = true;
+        extDiaFecha = fecha;
+    }
+    actualizarBtnExtender();
+}
+
+function getFechaRegistro() {
+    // Si extensión activa: guardar con la fecha del día extendido + hora real
+    if (extDiaActivo && extDiaFecha) {
+        const ahora = new Date();
+        const hora = ahora.toTimeString().slice(0, 8);
+        return new Date(extDiaFecha + 'T' + hora).toISOString();
+    }
+    return new Date().toISOString();
+}
+// ===== FIN EXTENDER DÍA =====
+
 // ===== IDIOMA Y TEMA =====
 let temaOscuro = localStorage.getItem('gt_tema') === 'dark';
 
@@ -1490,8 +1599,10 @@ const grid = document.getElementById('grid-variedad');
 grid.innerHTML = listaEmojis.map(e => `<span class="emoji-option" onclick="seleccionarEmoji('${e}')">${e}</span>`).join('');
 cargarDatosVehiculo();
 aplicarTema();
-// Limpiar claves antiguas
-['gt_jornada_activa', 'gt_jornada_fecha', 'gt_ext_activa', 'gt_ext_fecha'].forEach(k => localStorage.removeItem(k));
+// Limpiar claves antiguas de jornada
+['gt_jornada_activa', 'gt_jornada_fecha'].forEach(k => localStorage.removeItem(k));
+// Cargar estado de extensión de día
+cargarEstadoExtension();
 setTimeout(() => { document.getElementById('splash').style.opacity = '0'; setTimeout(() => document.getElementById('splash').style.display = 'none', 800); }, 3000);
 }
 function cargarDatosPerfil() {
@@ -2187,7 +2298,7 @@ function confirmarCobro() {
         metodoN: metodoN,
         metodoDetalle: detalle + (tipoSrv !== 'Normal' ? ` | 🚕 ${tipoSrv}` : ''),
         tipoServicio: tipoSrv,
-        fecha: getFechaJornada(), hora: horaStr,
+        fecha: getFechaRegistro(), hora: horaStr,
         // Guardar montos por método para filtrado correcto
         monEfectivo: efectivo,
         monYape: yape,
@@ -2206,7 +2317,7 @@ function confirmarCobro() {
                 km: kmVal, hrs: hrsVal,
                 metodoN: 'Yape',
                 metodoDetalle: `↩️ Vuelto dado al pasajero`,
-                fecha: getFechaJornada(), hora: horaStr
+                fecha: getFechaRegistro(), hora: horaStr
             });
         }
         if (vueltoEf > 0) {
@@ -2216,7 +2327,7 @@ function confirmarCobro() {
                 km: kmVal, hrs: hrsVal,
                 metodoN: 'Efectivo',
                 metodoDetalle: `↩️ Vuelto dado al pasajero`,
-                fecha: getFechaJornada(), hora: horaStr
+                fecha: getFechaRegistro(), hora: horaStr
             });
         }
     }
